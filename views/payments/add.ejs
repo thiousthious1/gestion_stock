@@ -1,0 +1,88 @@
+<%- include('../partials/header', { page: 'payments-add', pageGroup: 'sales' }) %>
+
+
+<div class="container mt-5 fade-in">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+      <i class="bi bi-credit-card-2-front"></i> Ajouter Paiement pour Vente SALE-<%= sale.id %>
+    </h1>
+    <a href="/payments/sale/<%= sale.id %>" class="btn btn-primary custom-retour">
+      <i class="bi bi-arrow-left-circle"></i> Historique des paiements
+    </a>
+  </div>
+  <%- include('../partials/breadcrumb', { parent: 'Transactions', current: 'Ajouter Paiement' }) %>
+
+  <form id="paymentForm" action="/payments/sales/<%= sale.id %>/add" method="POST" class="shadow-sm p-4 rounded bg-light">
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">
+        Montant à payer :
+        <br>
+        <small class="text-muted">
+          Total : <%= Number(sale.total_amount).toLocaleString() %> CFA | Déjà payé : <%= Number(sale.paid_amount).toLocaleString() %> CFA
+        </small>
+      </label>
+      <input
+        type="number"
+        step="0.01"
+        inputmode="decimal"
+        lang="en"
+        name="amount_paid"
+        id="amount_paid"
+        class="form-control"
+        required
+        max="<%= sale.total_amount - sale.paid_amount %>"
+      >
+      <small class="text-muted">Maximum : <%= (sale.total_amount - sale.paid_amount).toLocaleString() %> CFA</small>
+    </div>
+
+    <button type="submit" class="btn btn-success btn-lg custom-button">
+      <i class="bi bi-plus-circle-fill"></i> Ajouter Paiement
+    </button>
+  </form>
+
+</div>
+
+<%- include('../partials/footer') %>
+
+<script>
+  document.getElementById('paymentForm').addEventListener('submit', function (e) {
+    const max = parseFloat(document.getElementById('amount_paid').getAttribute('max'));
+    const value = parseFloat(document.getElementById('amount_paid').value);
+
+    if (value > max) {
+      e.preventDefault();
+      alert(`Le montant payé ne peut pas dépasser ${max} CFA.`);
+    }
+  });
+</script>
+
+<style>
+  .fade-in {
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .custom-retour {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .custom-retour:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0.5rem 1rem rgba(0, 123, 255, 0.5);
+  }
+
+  .custom-button {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .custom-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0.5rem 1rem rgba(25, 135, 84, 0.5); /* Vert vif */
+  }
+</style>

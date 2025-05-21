@@ -1,0 +1,28 @@
+<%- include('../partials/header', { page: 'expense-categories', pageGroup: 'expenses' }) %>
+
+<%- include('../partials/breadcrumb', { parent: 'Dépenses', current: 'Nouvelle catégorie' }) %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+        <i class="bi bi-folder2-open"></i> Nouvelle catégorie de dépense
+    </h1>
+    <a href="/expense-categories" class="btn btn-secondary">
+        <i class="bi bi-arrow-left-circle"></i> Retour à la liste
+    </a>
+</div>
+
+<form action="/expense-categories/add" method="POST">
+    <div class="mb-3">
+        <label for="name" class="form-label fw-bold">Nom de la catégorie</label>
+        <input type="text" class="form-control" id="name" name="name" required>
+    </div>
+    <div class="mb-3">
+        <label for="description" class="form-label fw-bold">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+    </div>
+    <button type="submit" class="btn btn-success">
+        <i class="bi bi-save"></i> Enregistrer
+    </button>
+</form>
+
+<%- include('../partials/footer') %>

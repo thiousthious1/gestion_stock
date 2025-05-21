@@ -1,0 +1,348 @@
+<%- include('../partials/header', { page: 'sales-add', pageGroup: 'sales' }) %>
+
+
+<div class="container mt-5 fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+      <i class="bi bi-cart-plus-fill"></i> Ajouter une Vente
+    </h1>
+  </div>
+  <%- include('../partials/breadcrumb', { parent: 'Transactions', current: 'Nouvelle Vente' }) %>
+
+  <form id="saleForm" action="/sales/add" method="POST">
+   
+
+
+    <!-- Client -->
+    <div class="mb-4">
+      <label for="customerSelect" class="form-label">Client :</label>
+      <div class="d-flex">
+        <select id="customerSelect" class="form-select me-2" required>
+          <option value="">-- Sélectionnez un client --</option>
+          <% customers.forEach(customer => { %>
+            <option value="<%= customer.id %>"><%= customer.name %></option>
+          <% }) %>
+        </select>
+        <button type="button" id="addCustomerBtn" class="btn btn-success">
+          <i class="bi bi-person-plus-fill"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Produit -->
+    <div class="mb-4">
+      <label for="productSelect" class="form-label">Produit :</label>
+      <div class="d-flex">
+        <select id="productSelect" class="form-select me-2">
+          <option value="">-- Sélectionnez un produit --</option>
+          <% products.forEach(product => { %>
+            <option 
+              value="<%= product.id %>" 
+              data-name="<%= product.nom %>" 
+              data-price="<%= product.prix_vente %>" 
+              data-stock="<%= product.quantite %>" 
+              data-stock-threshold="<%= settings.stock_threshold_value || 0 %>"
+              data-stock-threshold-enabled="<%= settings.enable_stock_threshold %>">
+              <%= product.nom %> (<%= product.quantite %> en stock)
+            </option>
+          <% }) %>
+        </select>
+
+        <button type="button" id="addProductBtn" class="btn btn-success">
+          <i class="bi bi-bag-plus-fill"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tableau des produits ajoutés -->
+    <div class="table-responsive mb-4">
+      <table class="table table-bordered shadow-sm">
+        <thead class="table-light">
+          <tr class="text-center">
+            <th>Produit</th>
+            <th>Quantité</th>
+            <th>Prix Unitaire</th>
+            <th>Remise (%)</th>
+            <th>Taxe (%)</th>
+            <th>Sous-total</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="productTableBody">
+          <!-- lignes dynamiques JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Remise globale et Taxe globale -->
+    <div class="row mb-4 justify-content-end">
+      <div class="col-md-3">
+        <label for="globalDiscount" class="form-label">Remise Globale (%)</label>
+        <input type="number" id="globalDiscount" class="form-control" min="0" value="0">
+      </div>
+      <div class="col-md-3">
+        <label for="globalTax" class="form-label">Taxe Globale (%)</label>
+        <input type="number" id="globalTax" class="form-control" min="0" value="0">
+      </div>
+    </div>
+
+    <!-- Résumé de la vente -->
+    <div class="row mb-4">
+      <!-- Partie gauche : Notes et Termes -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">
+              <i class="bi bi-pencil-square"></i> Informations Complémentaires
+            </h5>
+            <div class="mb-3">
+              <label for="note" class="form-label">Note</label>
+              <textarea id="note" class="form-control" rows="3" placeholder="Ajouter une note..."></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="terms" class="form-label">Termes & Conditions</label>
+              <textarea id="terms" class="form-control" rows="3" placeholder="Spécifiez les termes et conditions..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Partie droite : Résumé -->
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">
+              <i class="bi bi-receipt"></i> Résumé de la Vente
+            </h5>
+            <table class="table">
+              <tbody>
+                <tr>
+                  <th>Sous-total</th>
+                  <td id="subtotalDisplay">0 CFA</td>
+                </tr>
+                <tr>
+                  <th>Montant Remise Globale</th>
+                  <td id="discountDisplay">0 CFA</td>
+                </tr>
+                <tr>
+                  <th>Montant Taxe Globale</th>
+                  <td id="taxDisplay">0 CFA</td>
+                </tr>
+                <tr class="table-success">
+                  <th><strong>Total Final</strong></th>
+                  <td id="grandTotalDisplay"><strong>0 CFA</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-end">
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-save"></i> Enregistrer la vente
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- === DRAWER NOUVEAU CLIENT === -->
+<div id="drawerCustomer" class="drawer d-none">
+  <div class="drawer-header">
+    <h5>Ajouter un Nouveau Client</h5>
+    <button type="button" id="closeDrawerCustomer" class="btn-close"></button>
+  </div>
+  <div class="drawer-body">
+    <form id="customerForm">
+      <div class="mb-3">
+        <label for="customerName" class="form-label">Nom *</label>
+        <input type="text" id="customerName" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label for="customerEmail" class="form-label">Email</label>
+        <input type="email" id="customerEmail" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="customerPhone" class="form-label">Téléphone</label>
+        <input type="text" id="customerPhone" class="form-control">
+      </div>
+      <div class="text-end">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-person-check"></i> Enregistrer Client
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- === DRAWER NOUVEAU PRODUIT === -->
+<div id="drawerProduct" class="drawer d-none">
+  <div class="drawer-header">
+    <h5>Ajouter un Nouveau Produit</h5>
+    <button type="button" id="closeDrawerProduct" class="btn-close"></button>
+  </div>
+  <div class="drawer-body">
+    <form id="productForm">
+      <div class="mb-3">
+        <label for="productName" class="form-label">Nom du Produit *</label>
+        <input type="text" id="productName" class="form-control" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="productDescription" class="form-label">Description</label>
+        <textarea id="productDescription" class="form-control"></textarea>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="productPrice" class="form-label">Prix d’Achat *</label>
+          <input type="number" id="productPrice" class="form-control" step="0.01" required>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label for="productSalePrice" class="form-label">Prix de Vente *</label>
+          <input type="number" id="productSalePrice" class="form-control" step="0.01" required>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="productStock" class="form-label">Quantité Disponible *</label>
+        <input type="number" id="productStock" class="form-control" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="productCategorySelect" class="form-label">Catégorie *</label>
+        <select id="productCategorySelect" class="form-select" required>
+          <option value="">-- Sélectionnez une catégorie --</option>
+          <% categories.forEach(category => { %>
+            <option value="<%= category.id %>"><%= category.nom %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="text-end">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-bag-check-fill"></i> Enregistrer Produit
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- JavaScript -->
+<script src="/js/vente_dynamic.js"></script>
+<%- include('../partials/footer') %>
+
+<!-- Styles supplémentaires Modern Admin Panel -->
+<style>
+  body {
+    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+  }
+  
+.drawer {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 400px;
+  height: 100%;
+  background: #fff;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+  overflow-y: auto;
+  transition: right 0.3s ease;
+  z-index: 1050;
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+.drawer.show {
+  right: 0;
+}
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #ddd;
+}
+.drawer-body {
+  padding: 1rem;
+}
+
+/* Modern admin panel style */
+h1, h5 {
+  font-weight: bold;
+}
+.form-label {
+  font-weight: 600;
+}
+.btn-primary {
+  background-color: #4e73df;
+  border-color: #4e73df;
+}
+.btn-primary:hover {
+  background-color: #2e59d9;
+  border-color: #2653d4;
+}
+.btn-success {
+  background-color: #1cc88a;
+  border-color: #1cc88a;
+}
+.btn-success:hover {
+  background-color: #17a673;
+  border-color: #13855c;
+}
+.table thead th {
+  background-color: #f8f9fc;
+  color: #4e73df;
+  text-transform: uppercase;
+}
+.table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+#subtotalDisplay, #discountDisplay, #taxDisplay, #grandTotalDisplay {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+.card-title {
+  color: #4e73df;
+}
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<% if (typeof successMessage !== 'undefined' && successMessage) { %>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      Swal.fire({
+        icon: 'success',
+        title: 'Vente enregistrée !',
+        toast: false,
+        position: 'center',
+        showConfirmButton: false,
+        timer: 2500
+      });
+    });
+  </script>
+<% } %>
+<% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: <%= JSON.stringify(Array.isArray(errorMessage) ? errorMessage[0] : errorMessage) %>,
+        toast: false,
+        position: 'top',
+        confirmButtonText: 'OK'
+      });
+    });
+  </script>
+<% } %>
+

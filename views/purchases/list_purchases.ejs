@@ -1,0 +1,175 @@
+<%- include('../partials/header', { page: 'purchases', pageGroup: 'purchases' }) %>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+
+<div class="container mt-5 fade-in">
+    <h1><i class="bi bi-cart-plus"></i> Liste des Achats</h1>
+
+    <% if (successMessage && successMessage.length > 0) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= successMessage[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+
+    <% if (successMessage && successMessage.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= successMessage[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+
+
+    <% if (hasRight('add_purchases', 'add')) { %>
+        <a href="/purchases/add" class="btn btn-primary mb-3">
+            <i class="bi bi-plus-circle"></i> Nouvel achat
+        </a>
+    <% } %>
+
+
+    <div class="table-responsive">
+        <table id="maTableAchats" class="table table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Fournisseur</th>
+                    <th>Montant total</th>
+                    <th>Montant payé</th>
+                    <th>Reste à payer</th>
+                    <th>Remise globale (%)</th>
+                    <th>Taxe globale (%)</th>
+                    <th>Statut Paiement</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% purchases.forEach(p => { %>
+                    <tr>
+                        <td><%= p.id %></td>
+                        <td><%= p.purchase_date.toISOString().split('T')[0] %></td>
+                        <td><%= p.supplier_name || '—' %></td>
+                        <td><%= (p.total_amount || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2 }) %> FCFA</td>
+                        <td><%= (p.total_paid || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2 }) %> FCFA</td>
+                        <td>
+                            <% 
+                                const reste = (p.total_amount || 0) - (p.total_paid || 0);
+                                if (reste <= 0) { %>
+                                    <span class="badge bg-success">0 FCFA</span>
+                            <% } else { %>
+                                    <span class="badge bg-danger"><%= reste.toLocaleString('fr-FR', {minimumFractionDigits:2}) %> FCFA</span>
+                            <% } %>
+                        </td>
+                        
+                        <td><%= p.global_discount %> </td>
+                        <td><%= p.global_tax %> </td>
+                        <td>
+                            <% if (p.payment_status === 'Paid') { %>
+                                <span class="badge bg-success">Payé</span>
+                            <% } else if (p.payment_status === 'Partially Paid') { %>
+                                <span class="badge bg-warning text-dark">Partiellement payé</span>
+                            <% } else { %>
+                                <span class="badge bg-danger">Impayé</span>
+                            <% } %>
+                        </td>
+                        <td class="text-nowrap">
+                            <div class="dropdown">
+                                <button class="btn btn-light " type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <% if (hasRight('view_purchases', 'view')) { %>
+                                        <li><a class="dropdown-item" href="/purchases/details/<%= p.id %>">
+                                        <i class="bi bi-eye"></i> Détails</a></li>
+                                    <% } %>
+
+                                    <% if (hasRight('add_purchase_payments', 'add')) { %>
+                                        <li><a class="dropdown-item" href="/purchase-payments/add?purchase_id=<%= p.id %>">
+                                        <i class="bi bi-credit-card"></i> Paiement</a></li>
+                                    <% } %>
+
+                                    <% if (hasRight('edit_purchases', 'edit')) { %>
+                                        <li><a class="dropdown-item" href="/purchases/edit/<%= p.id %>">
+                                        <i class="bi bi-pencil-square"></i> Modifier</a></li>
+                                    <% } %>
+
+                                    <% if (hasRight('delete_purchases', 'delete')) { %>
+                                        <li>
+                                            <form action="/purchases/delete/<%= p.id %>" method="POST"
+                                            onsubmit="return confirm('Confirmer la suppression de cet achat ?');">
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="bi bi-trash"></i> Supprimer
+                                            </button>
+                                            </form>
+                                        </li>
+                                    <% } %>
+
+                                </ul>
+                            </div>
+
+                            <% if (p.retours_existants > 0) { %>
+                                <span class="badge bg-warning text-dark ms-2">
+                                    <i class="bi bi-arrow-counterclockwise"></i> Retour existant
+                                </span>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }) %>                
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#maTableAchats').DataTable({
+            language: {
+                url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json"
+            },
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'copy',
+                    text: 'Copier',
+                    exportOptions: {
+                        columns: ':not(:first-child):not(:last-child)' // Exclut ID et Actions
+                    }
+                },
+                {
+                    extend: 'excel',
+                    text: 'Excel',
+                    exportOptions: {
+                        columns: ':not(:first-child):not(:last-child)'
+                    }
+                },
+                {
+                    extend: 'pdf',
+                    text: 'PDF',
+                    exportOptions: {
+                        columns: ':not(:first-child):not(:last-child)'
+                    }
+                },
+                {
+                    extend: 'print',
+                    text: 'Imprimer',
+                    exportOptions: {
+                        columns: ':not(:first-child):not(:last-child)'
+                    }
+                }
+            ]
+        });
+    });
+</script>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Bon de commande</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; font-size: 12px; margin: 20px; color: #333; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .logo { max-height: 60px; }
+    .company-info { text-align: right; font-size: 11px; }
+    .title { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #007bff; }
+    .section { margin-bottom: 20px; }
+    .section h4 { margin-bottom: 5px; }
+    .table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .table th, .table td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    .table th { background-color: #f9f9f9; }
+    .total { font-weight: bold; }
+    .footer { margin-top: 40px; font-size: 10px; text-align: center; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+        <% if (logoBase64) { %>
+            <img src="<%= logoBase64 %>" class="logo" alt="Logo">
+        <% } %>
+    </div>
+    <div class="company-info">
+      <strong>Happy Delices</strong><br>
+      RCCM : 12345678<br>
+      IFU : 1122334455<br>
+      ☎ 97 00 00 00<br>
+      ✉ contact@happydelices.bj<br>
+      Cotonou, Bénin
+    </div>
+  </div>
+
+  <div class="title">Bon de Commande N° <%= order.id %></div>
+
+  <div class="section">
+    <h4>Fournisseur :</h4>
+    <p>
+      <strong><%= order.supplier_name %></strong><br>
+      <%= order.address || 'Adresse non renseignée' %><br>
+      Tél: <%= order.phone || '...' %><br>
+      Email: <%= order.email || '...' %>
+    </p>
+  </div>
+
+  <div class="section">
+    <h4>Détails du Bon :</h4>
+    <p>
+      Date de commande : <%= new Date(order.order_date).toLocaleDateString('fr-FR') %><br>
+      Statut : <%= order.status %>
+    </p>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Produit</th>
+        <th>Quantité</th>
+        <th>Prix unitaire</th>
+        <th>Remise (%)</th>
+        <th>TVA (%)</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% let total = 0; %>
+      <% details.forEach(item => {
+        const line = (item.quantity * item.unit_price) * (1 - item.discount / 100) * (1 + item.tax / 100);
+        total += line;
+      %>
+        <tr>
+          <td><%= item.product_name %></td>
+          <td><%= item.quantity %></td>
+          <td><%= parseFloat(item.unit_price).toLocaleString('fr-FR') %> FCFA</td>
+          <td><%= parseFloat(item.discount).toLocaleString('fr-FR') %></td>
+          <td><%= parseFloat(item.tax).toLocaleString('fr-FR') %></td>
+          <td><%= line.toLocaleString('fr-FR') %> FCFA</td>
+        </tr>
+      <% }) %>
+      <tr class="total">
+        <td colspan="5" style="text-align: right;">Total TTC</td>
+        <td><%= total.toLocaleString('fr-FR') %> FCFA</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <% if (order.note) { %>
+    <div class="section">
+      <strong>Note :</strong>
+      <p><%= order.note %></p>
+    </div>
+  <% } %>
+  
+<div class="section" style="margin-top: 50px;">
+  <p><strong>Signature du fournisseur / réceptionnaire :</strong></p>
+  <div style="border: 1px dashed #999; height: 60px; width: 300px; margin-top: 10px;"></div>
+</div>
+
+  <div class="footer">
+    <hr>
+    <p>Ce document est généré automatiquement. Il est valable sans signature manuscrite.</p>
+  </div>
+
+  <script>
+    window.onload = () => window.print();
+  </script>
+</body>
+</html>

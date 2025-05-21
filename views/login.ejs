@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Connexion</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      background-color: #f1f5f9;
+      font-family: palatino linotype;
+    }
+    .login-container {
+      height: 100vh;
+    }
+    .login-image {
+      background: url('/images/login-stock-illustration.png') no-repeat center center;
+      background-size: cover;
+    }
+    .login-box {
+      padding: 3rem;
+      background-color: #fff;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      width: 100%;
+      
+      max-width: none; /* supprime la contrainte */
+      min-width: 500px; /* largeur minimale plus visible */
+    }
+
+    .password-wrapper {
+      position: relative;
+    }
+    .toggle-password {
+      position: absolute;
+      top: 35px;
+      right: 12px;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      color: #6c757d;
+    }
+
+    .brand-logo {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container-fluid login-container">
+    <div class="row h-100">
+      <!-- Illustration -->
+      <div class="col-md-6 login-image d-none d-md-block"></div>
+
+      <!-- Formulaire -->
+      <div class="col-md-6 d-flex align-items-center justify-content-center">
+        <div class="login-box w-75 w-md-100">
+
+          <!-- Logo et nom -->
+          <div class="text-center mb-4">
+            <img src="/images/logo_happy.jpg" class="brand-logo rounded-circle mb-2" alt="Logo" style="height: 150px;width: 150px;">
+            <h4 class="fw-bold text-primary">Happy Delices Soft</h4>
+          </div>
+
+          <% if (errorMessage && errorMessage.length > 0) { %>
+            <div class="alert alert-danger"><%= errorMessage[0] %></div>
+          <% } %>
+
+          <% if (successMessage && successMessage.length > 0) { %>
+            <div class="alert alert-success"><%= successMessage[0] %></div>
+          <% } %>
+            <div class="d-flex align-items-center justify-content-center mb-3">
+              <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                <i class="bi bi-arrow-right-short fs-5"></i>
+              </div>
+              <h5 class="m-0 fw-semibold text-dark">Connexion</h5>
+            </div>
+
+          <form action="/login" method="POST">
+            <div class="mb-3">
+              <label class="form-label">Votre Adresse e-mail</label>
+              <input type="email" name="email" class="form-control" placeholder="ex: contact@stock.com" required>
+            </div>
+
+            <div class="mb-3 password-wrapper">
+              <label class="form-label">Votre Mot de passe</label>
+              <input type="password" name="password" class="form-control" id="passwordInput" placeholder="********" required>
+              <i class="bi bi-eye-slash toggle-password" id="togglePassword"></i>
+            </div>
+
+            <div class="d-grid mb-3">
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Se connecter
+              </button>
+            </div>
+
+            <div class="text-center">
+              <a href="/forgot-password" class="text-decoration-none">🔑 Mot de passe oublié ?</a>
+            </div>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const toggle = document.getElementById('togglePassword');
+    const password = document.getElementById('passwordInput');
+
+    toggle.addEventListener('click', () => {
+      const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+      password.setAttribute('type', type);
+      toggle.classList.toggle('bi-eye');
+      toggle.classList.toggle('bi-eye-slash');
+    });
+  </script>
+
+</body>
+</html>

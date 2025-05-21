@@ -1,0 +1,88 @@
+<%- include('../partials/header', { page: 'products-add', pageGroup: 'products' }) %>
+
+<div class="container mt-5 fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+      <i class="bi bi-box-seam"></i> Ajouter un Produit
+    </h1>
+    <a href="/products" class="btn btn-primary custom-retour">
+      <i class="bi bi-arrow-left-circle"></i> Retour à la liste
+    </a>
+  </div>
+  <%- include('../partials/breadcrumb', { parent: 'Catalogue', current: 'Ajouter Produit' }) %>
+
+  <form action="/products/add" method="POST" class="shadow p-4 rounded bg-light">
+    <div class="mb-3">
+      <label for="nom" class="form-label fw-bold">Nom :</label>
+      <input type="text" id="nom" name="nom" class="form-control" placeholder="Entrez le nom du produit" required />
+    </div>
+
+    <div class="mb-3">
+      <label for="description" class="form-label fw-bold">Description :</label>
+      <textarea id="description" name="description" class="form-control" rows="3" placeholder="Entrez une description"></textarea>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="prix_achat" class="form-label fw-bold">Prix d'achat :</label>
+        <div class="input-group">
+          <input type="number" id="prix_achat" name="prix_achat" step="0.01" class="form-control" placeholder="0.00" required />
+          <span class="input-group-text">F CFA</span>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <label for="prix_vente" class="form-label fw-bold">Prix de vente :</label>
+        <div class="input-group">
+          <input type="number" id="prix_vente" name="prix_vente" step="0.01" class="form-control" placeholder="0.00" required />
+          <span class="input-group-text">F CFA</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="quantite" class="form-label fw-bold">Quantité :</label>
+        <input type="number" id="quantite" name="quantite" class="form-control" placeholder="Quantité disponible" required />
+      </div>
+
+      <div class="col-md-6">
+        <label for="categorie_id" class="form-label fw-bold">Catégorie :</label>
+        <select id="categorie_id" name="categorie_id" class="form-select" required>
+          <option value="">-- Sélectionner une catégorie --</option>
+          <% categories.forEach(c => { %>
+            <option value="<%= c.id %>"><%= c.nom %></option>
+          <% }) %>
+        </select>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+      <i class="bi bi-plus-circle-fill"></i> Ajouter le produit
+    </button>
+  </form>
+
+</div>
+
+<%- include('../partials/footer') %>
+
+<style>
+  .fade-in {
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .custom-retour {
+  transition: all 0.3s ease-in-out;
+}
+
+.custom-retour:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0.5rem 1rem rgba(0, 123, 255, 0.5); /* Bleu intense */
+}
+
+</style>

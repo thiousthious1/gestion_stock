@@ -1,0 +1,70 @@
+<%- include('../partials/header', { page: 'users', pageGroup: 'settings' }) %>
+
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="fw-bold text-primary"><i class="bi bi-people me-2"></i> Membres du personnel</h2>
+    <% if (hasRight('add_users', 'add')) { %>
+      <a href="/users/add" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Ajouter un utilisateur
+      </a>
+    <% } %>
+
+  </div>
+
+  <% if (successMessage) { %>
+    <div class="alert alert-success"><%= successMessage %></div>
+  <% } %>
+
+  <div class="table-responsive shadow-sm">
+    <table class="table table-bordered align-middle text-center">
+      <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th>Nom</th>
+          <th>Email</th>
+          <th>Téléphone</th>
+          <th>Rôle</th>
+          <th>Entrepôt</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach((u, index) => { %>
+          <tr>
+            <td><%= index + 1 %></td>
+            <td>
+              <% if (u.avatar) { %>
+                <img src="/uploads/users/<%= u.avatar %>" class="rounded-circle me-2" width="30" height="30">
+              <% } %>
+              <%= u.username %>
+            </td>
+            <td><%= u.email %></td>
+            <td><%= u.phone %></td>
+            <td><%= u.role_name || 'N/A' %></td>
+            <td><%= u.warehouse_id || 'N/A' %></td>
+            <td>
+              <% if (u.status === 'enabled') { %>
+                <span class="badge bg-success">Activé</span>
+              <% } else { %>
+                <span class="badge bg-secondary">Désactivé</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (hasRight('edit_users', 'edit')) { %>
+                <a href="/users/edit/<%= u.id %>" class="btn btn-sm btn-warning"><i class="bi bi-pencil"></i></a>
+              <% } %>
+
+              <% if (hasRight('delete_users', 'delete')) { %>
+                <a href="/users/delete/<%= u.id %>" onclick="return confirm('Supprimer cet utilisateur ?')" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></a>
+              <% } %>
+
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

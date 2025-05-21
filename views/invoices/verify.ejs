@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Vérification Facture #<%= sale.id %></title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #333;
+      padding: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Facture de vente #<%= sale.id %></h1>
+  <p><strong>Date :</strong> <%= new Date(sale.created_at).toLocaleDateString() %></p>
+  <p><strong>Client :</strong> <%= sale.customer_name || "Client inconnu" %></p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Produit</th>
+        <th>Quantité</th>
+        <th>PU</th>
+        <th>Remise</th>
+        <th>Taxe</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% details.forEach(p => {
+        const q = p.quantity || 0;
+        const pu = p.unit_price || 0;
+        const d = p.discount || 0;
+        const t = p.tax || 0;
+
+        let total = pu * q;
+        total -= total * d / 100;
+        total += total * t / 100;
+      %>
+        <tr>
+          <td><%= p.product_name %></td>
+          <td><%= q %></td>
+          <td><%= pu.toLocaleString() %></td>
+          <td><%= d %>%</td>
+          <td><%= t %>%</td>
+          <td><%= total.toLocaleString() %> CFA</td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <h3 style="text-align: right; margin-top: 20px;">Total TTC : <%= sale.total_amount.toLocaleString() %> CFA</h3>
+</body>
+</html>

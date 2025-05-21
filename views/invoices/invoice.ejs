@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Facture</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; font-size: 12px; margin: 20px; color: #333; background-color: #fff; }
+    .header-banner { background-color: #007bff; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; }
+    .logo { max-height: 60px; }
+    .company-info { text-align: right; font-size: 11px; flex-grow: 1; }
+    .invoice-title { font-size: 22px; font-weight: bold; margin: 20px 0 10px; text-align: center; color: #007bff; }
+    .meta { margin-bottom: 15px; font-size: 12px; }
+    .meta p { margin: 4px 0; }
+    .table { width: 100%; border-collapse: collapse; margin-top: 20px; border-radius: 8px; overflow: hidden; }
+    .table th, .table td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    .table th { background-color: #f0f0f0; }
+    .summary-wrapper { display: flex; justify-content: flex-end; position: relative; }
+    .summary { margin-top: 20px; width: 320px; font-size: 12px; border-radius: 8px; overflow: hidden; }
+    .summary td { padding: 6px; }
+    .qr {
+      position: absolute;
+      right: -140px;
+      top: 100px;
+      background-color: #f9f9f9;
+      border: 1px solid #ccc;
+      padding: 8px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    .qr img { height: 100px; display: block; }
+    .footer { text-align: center; margin-top: 40px; font-size: 10px; color: #666; }
+    .highlight { font-weight: bold; color: #007bff; }
+
+  </style>
+</head>
+<body>
+  <div class="header-banner">
+    <% if (showLogo && logoBase64) { %>
+      <img src="<%= logoBase64 %>" class="logo" alt="Logo">
+    <% } %>
+    <div class="company-info">
+      <strong><%= settings.company_name %></strong><br>
+      RCCM : <%= settings.company_rccm %><br>
+      IFU : <%= settings.company_ifu %><br>
+      ☎ : <%= settings.company_phone %><br>
+      ✉ : <%= settings.company_email %><br>
+      <%= settings.company_address %>
+    </div>
+  </div>
+
+  <h2 class="invoice-title">Facture de vente</h2>
+  <div class="meta">
+    <p><strong>Facture N° :</strong> <%= sale.id %></p>
+    <p><strong>Date :</strong> <%= saleDate %></p>
+    <p><strong>Client :</strong> <%= sale.customer_name || 'Client Inconnu' %></p>
+    <% if (showSeller && sale.seller_name) { %>
+      <p><strong>Vendu par :</strong> <%= sale.seller_name %></p>
+    <% } %>
+    <p><strong>Statut de paiement :</strong> <%= sale.payment_status || 'Non spécifié' %></p>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Produit</th>
+        <th>Quantité</th>
+        <th>Prix</th>
+        <th>Remise</th>
+        <th>TVA</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% details.forEach(item => { 
+        const price = +item.unit_price;
+        const qty = +item.quantity;
+        const discount = +item.discount;
+        const tax = +item.tax;
+        const lineTotal = (price * qty) * (1 - discount / 100) * (1 + tax / 100);
+      %>
+        <tr>
+          <td><%= item.product_name %></td>
+          <td><%= qty %></td>
+          <td><%= price.toLocaleString('fr-FR') %> FCFA</td>
+          <td><%= discount.toLocaleString('fr-FR') %> %</td>
+          <td><%= tax.toLocaleString('fr-FR') %> %</td>
+          <td><%= lineTotal.toLocaleString('fr-FR') %> FCFA</td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <div class="summary-wrapper" style="justify-content: flex-end; margin-top: 20px;">
+    <table class="summary" style="width: 260px;text-align: right;" >
+      <tr><td style="text-align: left;"><strong>Sous-total</strong></td><td><%= parseFloat(subTotal).toLocaleString('fr-FR') %> FCFA</td></tr>
+      <tr><td style="text-align: left;"><strong>Remise Globale</strong></td><td><%= parseFloat(globalDiscount).toLocaleString('fr-FR') %> FCFA</td></tr>
+      <tr><td style="text-align: left;"><strong>TVA Globale</strong></td><td><%= parseFloat(globalTax).toLocaleString('fr-FR') %> FCFA</td></tr>
+      <tr><td class="highlight" style="text-align: left;">Total TTC</td><td class="highlight"><%= parseFloat(totalTTC).toLocaleString('fr-FR') %> FCFA</td></tr>
+      <tr><td style="text-align: left;">Montant payé</td><td><%= parseFloat(sale.paid_amount || 0).toLocaleString('fr-FR') %> FCFA</td></tr>
+      <tr><td style="text-align: left;">Reste à payer</td><td><%= parseFloat(sale.due_amount || 0).toLocaleString('fr-FR') %> FCFA</td></tr>
+    </table>
+  </div>
+
+  <div style="clear: both;"></div>
+
+  <% if (qrUrl) { %>
+    <div class="qr-code" style="text-align:right; margin-top:10px;">
+      <img src="<%= qrUrl %>" alt="QR Code">
+    </div>
+  <% } %>
+
+  <% if (showFooter && settings.invoice_footer) { %>
+    <div class="footer">
+      <hr style="margin: 10px 0;">
+      <p><%= settings.invoice_footer %></p>
+      <p>Cette facture est générée automatiquement et est valable sans signature manuscrite</p>
+    </div>
+  <% } %>
+
+  <script>
+    window.onload = () => {
+      window.print();
+    };
+  </script>
+</body>
+</html>

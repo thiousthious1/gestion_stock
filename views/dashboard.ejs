@@ -1,0 +1,645 @@
+<%- include('partials/header', { page: 'dashboard', pageGroup: 'dashboard' }) %>
+
+<div class="container-fluid mt-4">
+  <h2 class="fw-bold text-primary mb-4">Tableau de bord</h2>
+
+    <!-- Filtres dates -->
+    <form class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4" method="GET">
+
+        <!-- Date Range + Bouton -->
+        <div class="d-flex gap-2 align-items-center flex-wrap">
+            <input type="date" name="startDate" class="form-control form-control-sm" value="<%= startDate %>" style="width: 180px;">
+            <input type="date" name="endDate" class="form-control form-control-sm" value="<%= endDate %>" style="width: 180px;">
+            <button type="submit" class="btn btn-sm btn-primary">Filtrer</button>
+        </div>
+
+        <!-- Raccourcis Filtres -->
+        <div class="d-flex gap-1 flex-wrap">
+            <a href="/dashboard?startDate=<%= filters.today.start %>&endDate=<%= filters.today.end %>" class="btn btn-sm <%= startDate === filters.today.start && endDate === filters.today.end ? 'btn-primary' : 'btn-outline-secondary' %>">Aujourd'hui</a>
+            <a href="/dashboard?startDate=<%= filters.yesterday.start %>&endDate=<%= filters.yesterday.end %>" class="btn btn-sm btn-outline-secondary">Hier</a>
+            <a href="/dashboard?startDate=<%= filters.last7days.start %>&endDate=<%= filters.last7days.end %>" class="btn btn-sm btn-outline-secondary">7 derniers jours</a>
+            <a href="/dashboard?startDate=<%= filters.thisMonth.start %>&endDate=<%= filters.thisMonth.end %>" class="btn btn-sm btn-outline-secondary">Ce mois-ci</a>
+            <a href="/dashboard?startDate=<%= filters.thisYear.start %>&endDate=<%= filters.thisYear.end %>" class="btn btn-sm btn-outline-secondary">Cette année</a>
+        </div>
+    </form>
+
+    <%
+        let colorBg = '', colorBorder = '';
+
+        switch (selectedFilter) {
+            case 'today':
+            colorBg = '#d1e7dd'; colorBorder = '#198754'; break; // Vert
+            case 'yesterday':
+            colorBg = '#fff3cd'; colorBorder = '#ffc107'; break; // Jaune
+            case 'last7days':
+            colorBg = '#cff4fc'; colorBorder = '#0dcaf0'; break; // Cyan
+            case 'thisMonth':
+            colorBg = '#cfe2ff'; colorBorder = '#0d6efd'; break; // Bleu
+            case 'thisYear':
+            colorBg = '#e2d9f3'; colorBorder = '#6f42c1'; break; // Violet
+            default:
+            colorBg = '#f8f9fa'; colorBorder = '#adb5bd'; break; // Gris clair
+        }
+    %>
+
+    <div class="mb-3 px-3 py-1 rounded shadow-sm d-flex align-items-center gap-2"
+        style="background-color: <%= colorBg %>; border-left: 4px solid <%= colorBorder %>; font-size: 1.1rem; min-height: 30px;">
+        <i class="bi bi-calendar text-secondary" style="font-size: 1rem;"></i>
+        <span class="fw-semibold text-dark text-center w-100">
+            <% if (selectedFilter === 'today') { %>
+            Données pour <strong>aujourd'hui</strong>
+            <% } else if (selectedFilter === 'yesterday') { %>
+            Données à <strong>date d’hier</strong>
+            <% } else if (selectedFilter === 'last7days') { %>
+            Données des <strong>7 derniers jours</strong>
+            <% } else if (selectedFilter === 'thisMonth') { %>
+            Données pour <strong>ce mois-ci</strong>
+            <% } else if (selectedFilter === 'thisYear') { %>
+            Données pour <strong>cette année</strong>
+            <% } else if (startDate === endDate) { %>
+            Données pour la journée du <strong><%= startDate %></strong>
+            <% } else { %>
+            Données du <strong><%= startDate %></strong> au <strong><%= endDate %></strong>
+            <% } %>
+        </span>
+    </div>
+
+
+  <!-- Statistiques principales -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title text-muted">
+          <i class="bi bi-cart-check me-1"></i> Total Ventes
+        </h5>
+        <h3 class="text-success fw-bold"><%= formatNumber(total_sales) %> FCFA</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title text-muted">
+          <i class="bi bi-cash-stack me-1"></i> Total Dépenses
+        </h5>
+        <h3 class="text-danger fw-bold"><%= formatNumber(total_expenses) %> FCFA</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title text-muted">
+          <i class="bi bi-wallet2 me-1"></i> Paiements Reçus
+        </h5>
+        <h3 class="text-primary fw-bold"><%= formatNumber(payment_received) %> FCFA</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title text-muted">
+          <i class="bi bi-send-check me-1"></i> Paiements Envoyés
+        </h5>
+        <h3 class="text-warning fw-bold"><%= formatNumber(payment_sent) %> FCFA</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <!-- Graphiques -->
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Produits les plus vendus</h5>
+        <div class="d-flex justify-content-center">
+          <canvas id="topProductsChart" width="220" height="412" style="max-width: 100%;max-height: 100%;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Ventes / Achats journaliers</h5>
+        <canvas id="dailyChart" height="220"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h5 class="card-title fw-bold mb-4">Historique récent des stocks</h5>
+    <div class="row">
+      
+      <!-- Résumé gauche -->
+      <div class="col-md-3">
+        <div class="mb-3 p-3 rounded bg-success-subtle text-center">
+          <div class="fw-bold text-dark small">Total produits vendus</div>
+          <div class="fs-4 fw-bold"><%= totalSalesItems %></div>
+        </div>
+        <div class="mb-3 p-3 rounded bg-danger-subtle text-center">
+          <div class="fw-bold text-dark small">Total produits retournés</div>
+          <div class="fs-4 fw-bold"><%= totalSalesReturnsItems %></div>
+        </div>
+        <div class="mb-3 p-3 rounded bg-primary-subtle text-center">
+          <div class="fw-bold text-dark small">Total produits achetés</div>
+          <div class="fs-4 fw-bold"><%= totalPurchaseItems %></div>
+        </div>
+        <div class="mb-3 p-3 rounded bg-warning-subtle text-center">
+          <div class="fw-bold text-dark small">Total retours fournisseur</div>
+          <div class="fs-4 fw-bold"><%= totalPurchaseReturnsItems %></div>
+        </div>
+      </div>
+
+      <!-- Tableau droit -->
+      <div class="col-md-9">
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-3" id="stockTabs" role="tablist">
+          <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-sales">Ventes</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-purchases">Achats</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-purchase-returns">Retours fournisseur</a></li>
+          <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-sales-returns">Retours client</a></li>
+        </ul>
+
+        <!-- Tab content -->
+        <div class="tab-content">
+
+            <div class="tab-pane fade show active" id="tab-sales">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                        <tr>
+                            <th>N°</th>
+                            <th>Date</th>
+                            <th>Client</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                            <th>Payé</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <% recentSales.forEach((sale, i) => { %>
+                                <tr>
+                                <td>
+                                    <button class="btn btn-sm btn-light toggle-details" data-id="sale-<%= i %>">
+                                    <i class="bi bi-plus-circle-fill text-primary"></i>
+                                    </button>
+                                    <strong><%= sale.id %></strong>
+                                </td>
+                                <td><%= sale.date %></td>
+                                <td><%= sale.client_name %></td>
+                                <td>
+                                    <span class="badge <%= sale.status === 'Delivered' ? 'bg-warning text-dark' : 'bg-success' %>">
+                                    <%= sale.status %>
+                                    </span>
+                                </td>
+                                <td><%= formatNumber(sale.total) %> FCFA</td>
+                                <td><%= formatNumber(sale.paid) %> FCFA</td>
+                                </tr>
+
+                                <!-- Ligne des détails masqués -->
+                                <tr id="sale-<%= i %>" class="details-row d-none">
+                                <td colspan="6">
+                                    <div class="px-3 py-2 bg-light rounded border">
+                                    <!-- Contenu dynamique des détails ici -->
+                                        <table class="table table-sm table-borderless mb-0">
+                                            <thead>
+                                                <tr class="table-light">
+                                                <th>Produit</th>
+                                                <th>Quantité</th>
+                                                <th>Prix Unitaire</th>
+                                                <th>Remise</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <% (saleDetails[sale.id] || []).forEach(prod => { %>
+                                                <tr>
+                                                    <td><%= prod.product_name %></td>
+                                                    <td><%= prod.quantity %></td>
+                                                    <td><%= formatNumber(prod.unit_price) %> FCFA</td>
+                                                    <td><%= prod.discount %></td>
+                                                </tr>
+                                                <% }) %>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                    <div class="text-end mt-3">
+                        <a href="/sales/history" class="btn btn-outline-primary">
+                            Voir toutes les ventes <i class="bi bi-arrow-right-circle ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onglet Achats -->
+            <div class="tab-pane fade show" id="tab-purchases">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                        <th>N°</th>
+                        <th>Date</th>
+                        <th>Fournisseur</th>
+                        <th>Status</th>
+                        <th>Total</th>
+                        <th>Payé</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% recentPurchases.forEach((purchase, i) => { %>
+                        <tr>
+                            <td>
+                            <button class="btn btn-sm btn-light toggle-details" data-id="purchase-<%= purchase.id %>">
+                                <i class="bi bi-plus-circle-fill text-primary"></i>
+                            </button>
+                            <strong><%= purchase.id %></strong>
+                            </td>
+                            <td><%= purchase.date %></td>
+                            <td><%= purchase.supplier_name %></td>
+                            <td>
+                            <span class="badge <%= purchase.status === 'Completed' ? 'bg-success' : 'bg-warning text-dark' %>">
+                                <%= purchase.status %>
+                            </span>
+                            </td>
+                            <td><%= formatNumber(purchase.total) %> FCFA</td>
+                            <td><%= formatNumber(purchase.paid || 0) %> FCFA</td>
+                        </tr>
+
+                        <!-- Ligne détails masqués -->
+                        <tr id="purchase-<%= purchase.id %>" class="details-row d-none">
+                            <td colspan="6">
+                            <div class="px-3 py-2 bg-light rounded border">
+                                <table class="table table-sm table-borderless mb-0">
+                                <thead>
+                                    <tr class="table-light">
+                                    <th>Produit</th>
+                                    <th>Quantité</th>
+                                    <th>Prix Unitaire</th>
+                                    <th>Remise</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% (purchaseDetails[purchase.id] || []).forEach(prod => { %>
+                                    <tr>
+                                        <td><%= prod.product_name %></td>
+                                        <td><%= prod.quantity %></td>
+                                        <td><%= formatNumber(prod.unit_price) %> FCFA</td>
+                                        <td><%= formatNumber(prod.discount || 0) %> FCFA</td>
+                                    </tr>
+                                    <% }) %>
+                                </tbody>
+                                </table>
+                            </div>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                    </table>
+
+                    <!-- Bouton "voir tout" -->
+                    <div class="text-end mt-3">
+                    <a href="/purchases" class="btn btn-outline-primary">
+                        Voir tous les achats <i class="bi bi-arrow-right-circle ms-1"></i>
+                    </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onglet Retours d'Achats -->
+            <div class="tab-pane fade show" id="tab-purchase-returns">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                        <th>N°</th>
+                        <th>Date</th>
+                        <th>Fournisseur</th>
+                        <th>Motif</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% recentPurchaseReturns.forEach((retour, i) => { %>
+                        <tr>
+                            <td>
+                            <button class="btn btn-sm btn-light toggle-details" data-id="purchase-return-<%= retour.id %>">
+                                <i class="bi bi-plus-circle-fill text-primary"></i>
+                            </button>
+                            <strong><%= retour.id %></strong>
+                            </td>
+                            <td><%= retour.date %></td>
+                            <td><%= retour.supplier_name %></td>
+                            <td><%= retour.reason %></td>
+                        </tr>
+
+                        <!-- Ligne détails masqués -->
+                        <tr id="purchase-return-<%= retour.id %>" class="details-row d-none">
+                            <td colspan="4">
+                            <div class="px-3 py-2 bg-light rounded border">
+                                <table class="table table-sm table-borderless mb-0">
+                                <thead>
+                                    <tr class="table-light">
+                                    <th>Produit</th>
+                                    <th>Quantité</th>
+                                    <th>Motif de retour</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% (returnDetails[retour.id] || []).forEach(prod => { %>
+                                    <tr>
+                                        <td><%= prod.product_name %></td>
+                                        <td><%= prod.quantity %></td>
+                                        <td><%= prod.product_reason %></td>
+                                    </tr>
+                                    <% }) %>
+                                </tbody>
+                                </table>
+                            </div>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                    </table>
+
+                    <!-- Bouton "voir tout" -->
+                    <div class="text-end mt-3">
+                    <a href="/purchase-returns" class="btn btn-outline-primary">
+                        Voir tous les retours d'achat <i class="bi bi-arrow-right-circle ms-1"></i>
+                    </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onglet Retours de Ventes -->
+            <div class="tab-pane fade show" id="tab-sales-returns">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                        <th>N°</th>
+                        <th>Date</th>
+                        <th>Client</th>
+                        <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% recentSalesReturns.forEach((retour, i) => { %>
+                        <tr>
+                            <td>
+                            <button class="btn btn-sm btn-light toggle-details" data-id="sales-return-<%= retour.id %>">
+                                <i class="bi bi-plus-circle-fill text-primary"></i>
+                            </button>
+                            <strong><%= retour.id %></strong>
+                            </td>
+                            <td><%= retour.date %></td>
+                            <td><%= retour.customer_name %></td>
+                            <td><%= formatNumber(retour.total_amount || 0) %> FCFA</td>
+                        </tr>
+
+                        <!-- Ligne détails masqués -->
+                        <tr id="sales-return-<%= retour.id %>" class="details-row d-none">
+                            <td colspan="4">
+                            <div class="px-3 py-2 bg-light rounded border">
+                                <table class="table table-sm table-borderless mb-0">
+                                <thead>
+                                    <tr class="table-light">
+                                    <th>Produit</th>
+                                    <th>Quantité</th>
+                                    <th>Prix Unitaire</th>
+                                    <th>Remise</th>
+                                    <th>Motif</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% (returnSaleDetails[retour.id] || []).forEach(prod => { %>
+                                    <tr>
+                                        <td><%= prod.product_name %></td>
+                                        <td><%= prod.quantity %></td>
+                                        <td><%= formatNumber(prod.unit_price || 0) %> FCFA</td>
+                                        <td><%= formatNumber(prod.discount || 0) %> FCFA</td>
+                                        <td><%= prod.reason %></td>
+                                    </tr>
+                                    <% }) %>
+                                </tbody>
+                                </table>
+                            </div>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                    </table>
+
+                    <!-- Bouton "voir tout" -->
+                    <div class="text-end mt-3">
+                    <a href="/returns" class="btn btn-outline-primary">
+                        Voir tous les retours client <i class="bi bi-arrow-right-circle ms-1"></i>
+                    </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="card-title mb-0">Paiements</h5>
+      <a href="/purchase-payments" class="text-decoration-none text-primary fw-semibold">
+        Voir tout <i class="bi bi-chevron-double-right"></i>
+      </a>
+    </div>
+    <canvas id="paymentsChart" height="100"></canvas>
+  </div>
+</div>
+
+  <div class="row g-3 mb-4">
+    <!-- Alertes de Stock -->
+    <div class="col-md-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title">Alertes de Stock</h5>
+          <a href="/products" class="text-decoration-none text-primary fw-semibold">
+            Voir tout <i class="bi bi-chevron-double-right"></i>
+          </a>
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Produit</th>
+                  <th>Quantité actuelle</th>
+                  <th>Seuil d'alerte</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (stockAlerts.length === 0) { %>
+                  <tr><td colspan="3" class="text-center">Aucune alerte de stock</td></tr>
+                <% } else { %>
+                  <% stockAlerts.forEach(item => { %>
+                    <tr>
+                      <td><%= item.name %></td>
+                      <td><%= item.quantite %></td>
+                      <td><%= item.stock_alert_level %></td>
+                    </tr>
+                  <% }) %>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Clients -->
+    <div class="col-md-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <h5 class="card-title">Nos Meilleurs Clients</h5>
+          <a href="/customers" class="text-decoration-none text-primary fw-semibold">
+            Voir tout <i class="bi bi-chevron-double-right"></i>
+          </a>
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Client</th>
+                  <th>Montant Total</th>
+                  <th>Nombre de Ventes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% topCustomers.forEach(c => { %>
+                  <tr>
+                    <td><%= c.name %></td>
+                    <td><%= (c.total || 0).toLocaleString() %> FCFA</td>
+                    <td><%= c.sales_count %></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<%- include('partials/footer') %>
+
+<!-- ChartJS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const topProductsData = <%- JSON.stringify(topSellingProducts) %>;
+  const dailySales = <%- JSON.stringify(salesPerDay) %>;
+  const dailyPurchases = <%- JSON.stringify(purchasesPerDay) %>;
+
+  new Chart(document.getElementById('topProductsChart'), {
+    type: 'doughnut',
+    data: {
+      labels: topProductsData.map(p => p.name),
+      datasets: [{
+        data: topProductsData.map(p => p.qty),
+        backgroundColor: ['#0d6efd', '#ffc107', '#dc3545', '#20c997', '#6f42c1']
+      }]
+    }
+  });
+
+  new Chart(document.getElementById('dailyChart'), {
+    type: 'bar',
+    data: {
+      labels: dailySales.map(d => d.date),
+      datasets: [
+        {
+          label: 'Ventes',
+          data: dailySales.map(d => d.total),
+          backgroundColor: '#0d6efd'
+        },
+        {
+          label: 'Achats',
+          data: dailyPurchases.map(d => d.total),
+          backgroundColor: '#ffc107'
+        }
+      ]
+    }
+  });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.toggle-details').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const rowId = this.getAttribute('data-id');
+        const row = document.getElementById(rowId);
+        row.classList.toggle('d-none');
+
+        const icon = this.querySelector('i');
+        icon.classList.toggle('bi-plus-circle-fill');
+        icon.classList.toggle('bi-dash-circle-fill');
+      });
+    });
+  });
+</script>
+
+<script>
+  const paymentChartData = <%- JSON.stringify(paymentChartData) %>;
+  const ctx = document.getElementById('paymentsChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: paymentChartData.map(d => d.date),
+      datasets: [
+        {
+          label: 'Paiement fournisseur',
+          data: paymentChartData.map(d => d.sent),
+          borderColor: '#20c997',
+          backgroundColor: 'transparent',
+          tension: 0.4,
+          pointRadius: 3
+        },
+        {
+          label: 'Paiement client',
+          data: paymentChartData.map(d => d.received),
+          borderColor: '#fcbf49',
+          backgroundColor: 'transparent',
+          tension: 0.4,
+          pointRadius: 3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: value => value.toLocaleString('fr-FR') + ' FCFA'
+          }
+        }
+      }
+    }
+  });
+</script>

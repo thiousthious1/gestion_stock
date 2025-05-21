@@ -1,0 +1,261 @@
+<%- include('../partials/header', { page: 'customers', pageGroup: 'clients' }) %>
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+
+<div class="container mt-5 fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+      <i class="bi bi-people-fill"></i> Liste des Clients
+    </h1>
+<% if (errorMessage) { %>
+  <div class="alert alert-danger"><%= errorMessage %></div>
+<% } %>
+<% if (successMessage) { %>
+  <div class="alert alert-success"><%= successMessage %></div>
+<% } %>
+
+    <div class="d-flex gap-2">
+      <% if (hasRight('add_customers', 'add')) { %>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+          <i class="bi bi-person-plus-fill"></i> Ajouter un client
+        </button>
+      <% } %>
+
+      <% if (hasRight('add_customers', 'add')) { %>
+        <a href="/customers/import" class="btn btn-outline-success">
+          <i class="bi bi-upload"></i> Importer contacts
+        </a>
+      <% } %>
+
+    </div>
+  </div>
+
+  <%- include('../partials/breadcrumb', { parent: 'Clients', current: 'Liste des clients' }) %>
+
+
+  <div class="table-responsive shadow-sm">
+    <table id="customersTable" class="table table-bordered align-middle">
+      <thead class="table-light">
+        <tr class="text-center">
+          <th>#</th>
+          <th>Nom</th>
+          <th>Email</th>
+          <th>Téléphone</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% customers.forEach((customer, index) => { %>
+          <tr>
+            <td><%= index + 1 %></td>
+            <td><%= customer.name %></td>
+            <td><%= customer.email %></td>
+            <td><%= customer.phone %></td>
+            <td>
+              <div class="dropdown">
+                <button class="btn btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul class="dropdown-menu">
+                    <!--<li><a class="dropdown-item" href="/customers/edit/<%= customer.id %>">✏️ Modifier</a></li>-->
+                    <% if (hasRight('delete_customers', 'delete')) { %>
+                      <li><a class="dropdown-item text-danger" href="/customers/delete/<%= customer.id %>" onclick="return confirm('Supprimer ce client ?')">🗑️ Supprimer</a></li>
+                    <% } %>
+
+                </ul>
+              </div>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<% if (hasRight('add_customers', 'add')) { %>
+<!-- Modale Bootstrap pour ajouter un client -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="/customers/add" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addCustomerModalLabel">Ajouter un client</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="name" class="form-label">Nom :</label>
+            <input type="text" class="form-control" name="name" id="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email :</label>
+            <input type="email" class="form-control" name="email" id="email">
+          </div>
+          <div class="mb-3">
+            <label for="phone" class="form-label">Téléphone :</label>
+            <input type="text" class="form-control" name="phone" id="phone">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<% } %>
+
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- Boutons export -->
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>-->
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+  $(document).ready(function () {
+    $('#customersTable').DataTable({
+      language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json' },
+      responsive: true,
+      dom: 'Bfrtip',
+      buttons: [
+        {
+            extend: 'copy',
+            text: '<i class="bi bi-clipboard"></i> Copier',
+            className: 'btn btn-secondary',
+            exportOptions: {
+                  columns: ':not(:first-child):not(:last-child)' // On exclut le "+" et la colonne Action
+              }
+        },
+        {
+            extend: 'excel',
+            text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+            className: 'btn btn-success',
+            exportOptions: {
+                  columns: ':not(:first-child):not(:last-child)' // On exclut le "+" et la colonne Action
+              }
+        },
+        {
+            extend: 'csv',
+            text: '<i class="bi bi-filetype-csv"></i> CSV',
+            className: 'btn btn-info',
+            exportOptions: {
+                  columns: ':not(:first-child):not(:last-child)' // On exclut le "+" et la colonne Action
+              }
+        },
+        {
+            extend: 'pdf',
+            text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
+            className: 'btn btn-danger',
+            exportOptions: {
+                  columns: ':not(:first-child):not(:last-child)' // On exclut le "+" et la colonne Action
+              }
+        },
+        {
+            extend: 'print',
+            text: '<i class="bi bi-printer"></i> Imprimer',
+            className: 'btn btn-primary',
+            exportOptions: {
+                  columns: ':not(:first-child):not(:last-child)' // On exclut le "+" et la colonne Action
+              }
+        }
+    ]
+
+    });
+  });
+</script>
+
+<style>
+  body {
+    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+}
+  .fade-in {
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  /* Menu hover Stockifly style */
+  .dropdown-hover {
+    position: relative;
+    display: inline-block;
+  }
+
+  .dropdown-hover .dropdown-menu {
+    display: block;
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    right: 100%;
+    margin-right: 5px;
+    min-width: 200px;
+    z-index: 1000;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    background-color: #fff;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+    padding: 0;
+    transform: translateX(-110px); /* petit décalage vers la gauche au départ */
+  }
+
+  .dropdown-hover:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+  }
+
+  .dropdown-menu li {
+    list-style: none;
+  }
+
+  .dropdown-menu .dropdown-item {
+    display: block;
+    padding: 0.5rem 1rem;
+    color: #212529;
+    text-decoration: none;
+  }
+
+  .dropdown-menu .dropdown-item:hover {
+    background-color: #f8f9fa;
+  }
+
+  table.dataTable td {
+    white-space: nowrap;
+    overflow: visible;
+}
+
+  table.dataTable td:last-child {
+    width: 20px;
+}
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+
+
+<% if (successMessage) { %>
+  <script>
+    Swal.fire({
+      icon: 'success',
+      title: 'Succès',
+      text: '<%= successMessage %>',
+      confirmButtonText: 'OK'
+    });
+  </script>
+<% } %>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,61 @@
+<%- include('../partials/header', { page: 'categories', pageGroup: 'products' }) %>
+
+<div class="container mt-5 fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+      <i class="bi bi-tags-fill"></i> Catégories
+    </h1>
+    <a href="/products" class="btn btn-primary custom-retour">
+      <i class="bi bi-arrow-left-circle"></i> Retour aux produits
+    </a>
+  </div>
+  <%- include('../partials/breadcrumb', { parent: 'Catalogue', current: 'Catégories' }) %>
+
+
+  <% if (hasRight('add_categories', 'add')) { %>
+    <form action="/categories/add" method="POST" class="mb-4 shadow-sm p-3 rounded bg-light">
+      <div class="input-group">
+        <input type="text" name="nom" class="form-control" placeholder="Nom de la catégorie" required>
+        <button class="btn btn-success" type="submit">
+          <i class="bi bi-plus-circle"></i> Ajouter
+        </button>
+      </div>
+    </form>
+  <% } %>
+
+
+  <ul class="list-group shadow-sm">
+    <% categories.forEach(cat => { %>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <%= cat.nom %>
+        <% if (hasRight('delete_categories', 'delete')) { %>
+          <a href="/categories/delete/<%= cat.id %>" class="btn btn-sm btn-danger">
+            🗑️ Supprimer
+          </a>
+        <% } %>
+      </li>
+    <% }) %>
+  </ul>
+</div>
+
+<%- include('../partials/footer') %>
+
+<style>
+  .fade-in {
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .custom-retour {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .custom-retour:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0.5rem 1rem rgba(0, 123, 255, 0.5); /* Bleu intense */
+  }
+</style>

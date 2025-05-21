@@ -1,0 +1,469 @@
+<!-- === Fichier : views/partials/sidebar.ejs === -->
+ <style>
+  .accordion-button {
+    font-size: 0.95rem;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .accordion-button .rotate-icon {
+    margin-left: auto;
+  }
+
+  .accordion-header i:first-child {
+    margin-right: 8px;
+  }
+
+  .accordion-button span {
+    flex-grow: 1;
+  }
+
+  .accordion-header {
+    width: 100%;
+  }
+</style>
+
+<style>
+  .sidebar-wrapper {
+    width: 250px;
+    min-height: 100vh;
+    background-color: #fff;
+    border-right: 1px solid #dee2e6;
+    padding: 20px 10px;
+    position: relative;
+  }
+
+  .sidebar-logo {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .sidebar-logo img {
+    max-height: 60px;
+  }
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+    transition: background-color 0.3s ease;
+  }
+
+  .sidebar-link:hover {
+    background-color: #f1f3f5;
+  }
+
+  .accordion-item {
+    margin-bottom: 1.2rem; /* ✅ Espace entre groupes */
+  }
+
+  .accordion-button {
+    font-size: 0.95rem;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: #f8f9fa;
+  }
+
+  .accordion-body {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .accordion-body .nav-link {
+    padding-left: 24px; /* ✅ Indentation des sous-liens */
+  }
+
+  .accordion-body a.active {
+    font-weight: bold;
+    background-color: #d0ebff;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+      z-index: 1040;
+    }
+
+    .sidebar-wrapper.active {
+      transform: translateX(0);
+    }
+  }
+
+
+  /* ✅ Sidebar étendu/réduit */
+  .sidebar-wrapper.collapsed {
+    width: 70px !important;
+  }
+
+  .sidebar-wrapper.collapsed .sidebar-company-name,
+  .sidebar-wrapper.collapsed .accordion-button span,
+  .sidebar-wrapper.collapsed .accordion-body span {
+    display: none;
+  }
+
+  .sidebar-wrapper.collapsed .accordion-button {
+    justify-content: center;
+  }
+
+  .sidebar-wrapper.collapsed .accordion-body a {
+    text-align: center;
+    padding-left: 0;
+  }
+
+
+  /* Optionnel pour arrondir plus proprement */
+.sidebar-toggle-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  z-index: 1050;
+}
+
+#toggleSidebarWidth {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+/* Quand le sidebar est réduit, cache les flèches dropdown */
+.sidebar-wrapper.collapsed .bi-chevron-down,
+.sidebar-wrapper.collapsed .rotate-icon {
+  display: none !important;
+}
+.sidebar-wrapper.collapsed .accordion-button {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  justify-content: center;
+}
+/* Cache tous les textes de menu */
+.sidebar-wrapper.collapsed .sidebar-link span,
+.sidebar-wrapper.collapsed .accordion-button span,
+.sidebar-wrapper.collapsed .accordion-header span {
+  display: none !important;
+}
+.sidebar-wrapper.collapsed .accordion-button {
+
+  justify-content: center;
+}
+.sidebar-wrapper.collapsed .nav-link {
+  text-align: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+</style>
+
+
+
+<!-- Sidebar toggle button mobile -->
+<button class="btn btn-outline-primary d-md-none m-2" onclick="toggleSidebar()">
+  <i class="bi bi-list"></i>
+</button>
+
+<!-- Sidebar wrapper -->
+<div id="sidebar" class="sidebar-wrapper">
+  <nav class="nav flex-column">
+    <div class="sidebar-logo d-flex align-items-center justify-content-center">
+      <img src="/images/logo_happy.jpg" alt="Logo" class="rounded-circle me-2">
+      <span class="sidebar-company-name fw-bold text-primary">Happy Delices</span>
+    </div>
+
+    <!-- Bouton de réduction à droite du sidebar -->
+    <!-- Bouton de réduction à droite du sidebar -->
+    <div class="sidebar-toggle-btn text-end">
+      <button id="toggleSidebarWidth" class="btn btn-sm btn-outline-secondary rounded-circle">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+    </div>
+
+
+
+    <% if (user && user.permissions.includes('view_dashboard')) { %>
+      <a href="/dashboard" class="nav-link fw-bold sidebar-link <%= (page === 'dashboard') ? 'active' : '' %>" data-bs-toggle="tooltip" data-bs-placement="right" title="Tableau de bord">
+        <i class="bi bi-speedometer2"></i> <span>Dashboard</span>
+      </a>
+    <% } %>
+
+    <% if (user && user.permissions.includes('view_customers')) { %>
+  <!-- INTERVENANTS -->
+  <div class="accordion-item sidebar-card">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed sidebar-header" type="button" data-bs-toggle="collapse" data-bs-target="#collapseParties">
+        <i class="bi bi-people-fill me-2"></i> <span>Intervenants</span>
+        <i class="bi bi-chevron-down rotate-icon ms-auto"></i>
+      </button>
+    </h2>
+    <div id="collapseParties" class="accordion-collapse collapse <%= (pageGroup === 'clients' || pageGroup === 'suppliers') ? 'show' : '' %>">
+      <div class="accordion-body ps-4">
+        <% if (user.permissions.includes('view_customers')) { %>
+        <a href="/customers" class="nav-link sidebar-link <%= (page === 'customers') ? 'active' : '' %>">
+          <i class="bi bi-person"></i> <span>Clients</span>
+        </a>
+        <% } %>
+        <% if (user.permissions.includes('view_suppliers')) { %>
+        <a href="/suppliers" class="nav-link sidebar-link <%= (page === 'suppliers') ? 'active' : '' %>">
+          <i class="bi bi-truck"></i> <span>Fournisseurs</span>
+        </a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <% if (user && user.permissions.includes('view_products')) { %>
+  <!-- GESTION DES PRODUITS -->
+  <div class="accordion-item sidebar-card">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed sidebar-header" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProducts">
+        <i class="bi bi-box-seam me-2"></i> <span>Catalogue</span>
+        <i class="bi bi-chevron-down rotate-icon ms-auto"></i>
+      </button>
+    </h2>
+    <div id="collapseProducts" class="accordion-collapse collapse <%= (pageGroup === 'products') ? 'show' : '' %>">
+      <div class="accordion-body ps-4">
+        <a href="/products" class="nav-link sidebar-link <%= (page === 'products') ? 'active' : '' %>">
+          <i class="bi bi-box"></i> <span>Produits</span>
+        </a>
+        <a href="/categories" class="nav-link sidebar-link <%= (page === 'categories') ? 'active' : '' %>">
+          <i class="bi bi-tags"></i> <span>Catégories</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <% if (user && user.permissions.includes('view_sales')) { %>
+  <!-- VENTES -->
+  <div class="accordion-item sidebar-card">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed sidebar-header" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSales">
+        <i class="bi bi-receipt me-2"></i> <span>Transactions</span>
+        <i class="bi bi-chevron-down rotate-icon ms-auto"></i>
+      </button>
+    </h2>
+    <div id="collapseSales" class="accordion-collapse collapse <%= (pageGroup === 'sales') ? 'show' : '' %>">
+      <div class="accordion-body ps-4">
+        <a href="/sales/history" class="nav-link sidebar-link <%= (page === 'sales') ? 'active' : '' %>">
+          <i class="bi bi-currency-dollar"></i> <span>Ventes</span>
+        </a>
+        <a href="/returns" class="nav-link sidebar-link <%= (page === 'returns') ? 'active' : '' %>">
+          <i class="bi bi-arrow-counterclockwise"></i> <span>Retours produits</span>
+        </a>
+        <a href="/delivery-notes" class="nav-link sidebar-link <%= (page === 'delivery-notes') ? 'active' : '' %>">
+          <i class="bi bi-truck"></i> <span>Bons de livraison</span>
+        </a>
+
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <% if (user && user.permissions.includes('view_purchases')) { %>
+  <!-- ACHATS -->
+  <div class="accordion-item sidebar-card">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed sidebar-header" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePurchases">
+        <i class="bi bi-box-arrow-in-down me-2"></i> <span>Approvisionnements</span>
+        <i class="bi bi-chevron-down rotate-icon ms-auto"></i>
+      </button>
+    </h2>
+    <div id="collapsePurchases" class="accordion-collapse collapse <%= (pageGroup === 'purchases') ? 'show' : '' %>">
+      <div class="accordion-body ps-4">
+        <a href="/purchases" class="nav-link sidebar-link <%= (page === 'purchases') ? 'active' : '' %>">
+          <i class="bi bi-journal-text"></i> <span>Approvisionnements</span>
+        </a>
+        <a href="/purchase-returns" class="nav-link sidebar-link <%= (page === 'purchase-returns') ? 'active' : '' %>">
+          <i class="bi bi-arrow-counterclockwise"></i> <span>Retour fournisseur</span>
+        </a>
+        <a href="/purchase-payments" class="nav-link sidebar-link <%= (page === 'purchase-payments') ? 'active' : '' %>">
+          <i class="bi bi-credit-card"></i> Paiements Appro
+        </a>
+        <a href="/purchase-orders" class="nav-link sidebar-link <%= (page === 'purchase-orders') ? 'active' : '' %>">
+          <i class="bi bi-file-earmark-text"></i> <span>Bons de commande</span>
+        </a>
+
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <% if (user && user.permissions.includes('view_expenses')) { %>
+  <!-- DÉPENSES -->
+  <div class="accordion-item sidebar-card">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed sidebar-header" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExpenses">
+        <i class="bi bi-cash-coin me-2"></i> <span>Dépenses</span>
+        <i class="bi bi-chevron-down rotate-icon ms-auto"></i>
+      </button>
+    </h2>
+    <div id="collapseExpenses" class="accordion-collapse collapse <%= (pageGroup === 'expenses') ? 'show' : '' %>">
+      <div class="accordion-body ps-4">
+        <a href="/expense-categories" class="nav-link sidebar-link <%= (page === 'expense-categories') ? 'active' : '' %>">
+          <i class="bi bi-folder2"></i> <span>Catégories de dépenses</span>
+        </a>
+        <a href="/expenses" class="nav-link sidebar-link <%= (page === 'expenses') ? 'active' : '' %>">
+          <i class="bi bi-cash-stack"></i> <span>Liste des dépenses</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <% if (
+  user && (
+    user.permissions.includes('view_stock_adjustments') ||
+    user.permissions.includes('view_stock_transfers')
+  )
+) { %>
+<!-- INVENTAIRE -->
+<div class="accordion-item sidebar-card">
+  <h2 class="accordion-header">
+    <button class="accordion-button collapsed sidebar-header" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInventory">
+      <i class="bi bi-clipboard-check me-2"></i> <span>Inventaire</span>
+      <i class="bi bi-chevron-down rotate-icon ms-auto"></i>
+    </button>
+  </h2>
+  <div id="collapseInventory" class="accordion-collapse collapse <%= (pageGroup === 'inventory') ? 'show' : '' %>">
+    <div class="accordion-body ps-4">
+      <% if (user.permissions.includes('view_stock_adjustments')) { %>
+      <a href="/inventories" class="nav-link sidebar-link <%= (page === 'inventory-list') ? 'active' : '' %>">
+        <i class="bi bi-clipboard-data"></i> <span>Liste des Inventaires</span>
+      </a>
+      <% } %>
+
+      <% if (user.permissions.includes('view_stock_transfers')) { %>
+      <a href="/stock-transfers" class="nav-link sidebar-link <%= (page === 'stock-transfers') ? 'active' : '' %>">
+        <i class="bi bi-arrow-left-right"></i> <span>Transferts de stock</span>
+      </a>
+      <% } %>
+    </div>
+  </div>
+</div>
+<% } %>
+
+
+  <% if (user && user.permissions.includes('view_reports')) { %>
+  <!-- RAPPORTS -->
+  <div class="accordion-item sidebar-card">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed sidebar-header" type="button" data-bs-toggle="collapse" data-bs-target="#collapseReports">
+        <i class="bi bi-bar-chart-line me-2"></i> <span>Rapports</span>
+        <i class="bi bi-chevron-down rotate-icon ms-auto"></i>
+      </button>
+    </h2>
+    <div id="collapseReports" class="accordion-collapse collapse <%= (pageGroup === 'reports') ? 'show' : '' %>">
+      <div class="accordion-body ps-4">
+         <% if (hasRight('view_rapport_vente', 'view')) { %>
+          <a href="/reports/sales" class="nav-link sidebar-link <%= (page === 'report-sales-simple') ? 'active' : '' %>">
+            <i class="bi bi-graph-up"></i> <span>Rapport des ventes</span>
+          </a>
+        <% } %>
+        <a href="/sales/report/advanced" class="nav-link sidebar-link <%= (page === 'report-sales-advanced') ? 'active' : '' %>">
+            <i class="bi bi-bar-chart-steps"></i> <span>Rapport avancé des ventes</span>
+        </a>
+        <a href="/reports/purchases" class="nav-link sidebar-link <%= (page === 'report-purchases') ? 'active' : '' %>">
+          <i class="bi bi-clipboard-data"></i> <span>Rapport des achats</span>
+        </a>
+        <a href="/purchases/report/advanced" class="nav-link sidebar-link <%= (page === 'report-purchases-advanced') ? 'active' : '' %>">
+          <i class="bi bi-bar-chart-fill"></i> <span>Rapport avancé des achats</span>
+        </a>
+        <a href="/expenses/report/advanced" class="nav-link sidebar-link <%= (page === 'report-expenses-advanced') ? 'active' : '' %>">
+          <i class="bi bi-graph-up"></i> <span>Rapport dépenses</span>
+        </a>
+        <a href="/reports/stock" class="nav-link sidebar-link <%= (page === 'report-stock') ? 'active' : '' %>">
+          <i class="bi bi-boxes"></i> <span>Rapport de stock</span>
+        </a>
+        <a href="/products/report/advanced" class="nav-link sidebar-link <%= (page === 'report-stock-advanced') ? 'active' : '' %>">
+          <i class="bi bi-bar-chart-line-fill"></i> <span>Rapport avancé du stock</span>
+        </a>
+        <a href="/products/report/stock-movement" class="nav-link sidebar-link <%= (page === 'report-stock-movement') ? 'active' : '' %>">
+          <i class="bi bi-arrow-left-right"></i> <span>Mouvement journalier du stock</span>
+        </a>
+        <a href="/reports/summary" class="nav-link sidebar-link <%= (page === 'report-summary') ? 'active' : '' %>">
+          <i class="bi bi-clipboard-data"></i> <span>Synthèse globale</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <% if (user && user.permissions.includes('view_company_settings')) { %>
+  <!-- PARAMÈTRES -->
+  <div class="accordion-item sidebar-card">
+    <h2 class="accordion-header">
+      <button class="accordion-button collapsed sidebar-header" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSettings">
+        <i class="bi bi-gear me-2"></i> <span>Paramètres</span>
+        <i class="bi bi-chevron-down rotate-icon ms-auto"></i>
+      </button>
+    </h2>
+    <div id="collapseSettings" class="accordion-collapse collapse <%= (pageGroup === 'settings') ? 'show' : '' %>">
+      <div class="accordion-body ps-4">
+        <a href="/settings/roles" class="nav-link sidebar-link <%= (page === 'settings-roles') ? 'active' : '' %>">
+          <i class="bi bi-shield-lock"></i> <span>Profils & Rôles</span>
+        </a>
+        <a href="/settings/company" class="nav-link sidebar-link <%= (pageGroup === 'settings') ? 'active' : '' %>">
+          <i class="bi bi-gear"></i> <span>Paramètres généraux</span>
+        </a>
+        <a href="/users" class="nav-link sidebar-link <%= (page === 'users') ? 'active' : '' %>">
+          <i class="bi bi-people"></i> <span>Gestion des utilisateurs</span>
+        </a>
+      </div>
+    </div>
+  </div>
+  <% } %>
+  </nav>
+</div>
+<script>
+  const toggleBtn = document.getElementById('toggleSidebarWidth');
+  const sidebarWrapper = document.getElementById('sidebar');
+
+  toggleBtn.addEventListener('click', () => {
+    sidebarWrapper.classList.toggle('collapsed');
+    const icon = toggleBtn.querySelector('i');
+    icon.classList.toggle('bi-chevron-left');
+    icon.classList.toggle('bi-chevron-right');
+  });
+</script>
+
+<script>
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('active');
+  }
+</script>
+
+
+<!-- JS : Activation tooltips + toggle sidebar -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const toggleBtn = document.getElementById('toggleSidebarWidth');
+    const sidebarWrapper = document.getElementById('sidebar');
+
+    toggleBtn.addEventListener('click', () => {
+      sidebarWrapper.classList.toggle('collapsed');
+      const icon = toggleBtn.querySelector('i');
+      icon.classList.toggle('bi-chevron-left');
+      icon.classList.toggle('bi-chevron-right');
+    });
+
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+      new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  });
+</script>

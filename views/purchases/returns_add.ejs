@@ -1,0 +1,146 @@
+<%- include('../partials/header', { page: 'purchase-returns', pageGroup: 'purchases' }) %>
+
+<div class="container mt-5 fade-in">
+    <h1 class="mb-4"><i class="bi bi-arrow-counterclockwise"></i> Ajouter un retour fournisseur</h1>
+
+    <% if (successMessage && successMessage.length > 0) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= successMessage[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+
+    <% if (successMessage && successMessage.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= successMessage[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+
+    <form action="/purchase-returns/add" method="POST" id="returnForm">
+        <div class="mb-3">
+            <label for="purchase_id" class="form-label">Sélectionner l'achat</label>
+            <select name="purchase_id" id="purchase_id" class="form-select" required>
+                <option value="">-- Choisir un achat --</option>
+                <% purchases.forEach(p => { %>
+                    <option value="<%= p.id %>">Achat n° <%= p.id %></option>
+                <% }) %>
+            </select>
+        </div>
+
+        <div id="productsContainer">
+            <!-- Les produits seront ajoutés ici -->
+        </div>
+
+        <div class="mb-3">
+            <label for="reason" class="form-label">Motif général du retour (optionnel)</label>
+            <textarea name="reason" id="reason" class="form-control"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success"><i class="bi bi-check-circle"></i> Enregistrer le retour</button>
+        <a href="/purchase-returns" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+
+<script>
+document.getElementById('purchase_id').addEventListener('change', function () {
+    const purchaseId = this.value;
+    const container = document.getElementById('productsContainer');
+    container.innerHTML = '';
+
+    if (!purchaseId) return;
+
+    fetch(`/purchase-returns/products/${purchaseId}`)
+        .then(response => response.json())
+        .then(products => {
+            if (products.length === 0) {
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-warning';
+                alert.textContent = 'Aucun produit trouvé pour cet achat.';
+                container.appendChild(alert);
+                return;
+            }
+
+            const title = document.createElement('h4');
+            title.className = 'mt-4';
+            title.textContent = "Produits de l'achat";
+            container.appendChild(title);
+
+            const table = document.createElement('table');
+            table.className = 'table table-bordered';
+
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th>Produit</th>
+                    <th>Quantité achetée</th>
+                    <th>Quantité à retourner</th>
+                    <th>Motif spécifique (optionnel)</th>
+                </tr>
+            `;
+            table.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+
+            products.forEach((product, index) => {
+                const row = document.createElement('tr');
+
+                // Produit
+                const tdName = document.createElement('td');
+                tdName.textContent = product.product_name;
+                row.appendChild(tdName);
+
+                // Quantité achetée + info restante
+                const tdPurchasedQty = document.createElement('td');
+                tdPurchasedQty.textContent = product.purchased_quantity + 
+                    " (retourné : " + product.already_returned + ", restant : " + product.remaining_quantity + ")";
+                row.appendChild(tdPurchasedQty);
+
+                // Quantité à retourner
+                const tdReturnQty = document.createElement('td');
+
+                const qtyInput = document.createElement('input');
+                qtyInput.type = 'number';
+                qtyInput.name = `products[${index}][quantity]`;
+                qtyInput.min = '0';
+                qtyInput.max = product.remaining_quantity;
+                qtyInput.className = 'form-control';
+                qtyInput.value = '0';
+                tdReturnQty.appendChild(qtyInput);
+
+                const productIdInput = document.createElement('input');
+                productIdInput.type = 'hidden';
+                productIdInput.name = `products[${index}][product_id]`;
+                productIdInput.value = product.product_id;
+                tdReturnQty.appendChild(productIdInput);
+
+                row.appendChild(tdReturnQty);
+
+                // Motif spécifique
+                const tdReason = document.createElement('td');
+                const reasonInput = document.createElement('input');
+                reasonInput.type = 'text';
+                reasonInput.name = `products[${index}][reason]`;
+                reasonInput.className = 'form-control';
+                reasonInput.placeholder = 'Motif du retour';
+                tdReason.appendChild(reasonInput);
+
+                row.appendChild(tdReason);
+
+                tbody.appendChild(row);
+            });
+
+            table.appendChild(tbody);
+            container.appendChild(table);
+        })
+        .catch(err => {
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger';
+            alert.textContent = 'Erreur de chargement des produits.';
+            container.appendChild(alert);
+            console.error(err);
+        });
+});
+</script>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,44 @@
+<%- include('../partials/header', { page: 'report-stock-movement', pageGroup: 'reports' }) %>
+
+<div class="container mt-5 fade-in">
+
+    <h1 class="fw-bold text-primary mb-4">
+        <i class="bi bi-arrow-left-right"></i> Mouvement journalier du stock
+    </h1>
+    <a href="/products/report/stock-movement/print" class="btn btn-secondary mb-3 no-print">
+        <i class="bi bi-printer"></i> Imprimer
+    </a>
+    
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Produit</th>
+                <th>Stock début journée</th>
+                <th>Stock actuel</th>
+                <th>Écart</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% mouvements.forEach(row => { %>
+                <tr>
+                    <td><%= row.nom %></td>
+                    <td><%= row.stock_debut.toLocaleString('fr-FR', { minimumFractionDigits: 0 }) %></td>
+                    <td><%= row.stock_actuel.toLocaleString('fr-FR', { minimumFractionDigits: 0 }) %></td>
+                    <td>
+                        <%= row.ecart.toLocaleString('fr-FR', { minimumFractionDigits: 0 }) %>
+                        <% if (row.ecart > 0) { %>
+                            <span class="badge bg-success">+</span>
+                        <% } else if (row.ecart < 0) { %>
+                            <span class="badge bg-danger">-</span>
+                        <% } else { %>
+                            <span class="badge bg-secondary">0</span>
+                        <% } %>
+                    </td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+</div>
+
+<%- include('../partials/footer') %>

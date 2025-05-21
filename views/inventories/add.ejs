@@ -1,0 +1,67 @@
+<%- include('../partials/header', { page: 'inventories-add', pageGroup: 'inventories' }) %>
+
+<%- include('../partials/breadcrumb', { parent: 'Inventaires', current: 'Nouvel inventaire' }) %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+        <i class="bi bi-plus-circle"></i> Nouvel inventaire
+    </h1>
+    <a href="/inventories" class="btn btn-secondary">
+        <i class="bi bi-arrow-left-circle"></i> Retour à la liste
+    </a>
+</div>
+
+<form action="/inventories/add" method="POST">
+    <div class="mb-3">
+        <label class="form-label fw-bold">Date de l'inventaire</label>
+        <input type="date" name="inventory_date" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Référence</label>
+        <input type="text" class="form-control" value="La référence sera générée automatiquement" readonly>
+    </div>    
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Note</label>
+        <textarea name="note" class="form-control" rows="3"></textarea>
+    </div>
+
+    <hr>
+    <h4>Produits à contrôler</h4>
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Stock système</th>
+                    <th>Quantité constatée</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% products.forEach(function(product) { %>
+                    <tr>
+                        <td>
+                            <%= product.nom %>
+                            <input type="hidden" name="product_id[]" value="<%= product.id %>">
+                        </td>
+                        <td>
+                            <%= product.quantite %>
+                            <input type="hidden" name="system_quantity[]" value="<%= product.quantite %>">
+                        </td>
+                        <td>
+                            <input type="number" step="0.01" name="counted_quantity[]" class="form-control" required>
+                        </td>
+                    </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+
+    <button type="submit" class="btn btn-success">
+        <i class="bi bi-save"></i> Enregistrer l'inventaire
+    </button>
+</form>
+
+<%- include('../partials/footer') %>

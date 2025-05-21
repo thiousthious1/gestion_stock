@@ -1,0 +1,79 @@
+<%- include('../partials/header', { page: 'roles', pageGroup: 'settings' }) %>
+
+<div class="container mt-5">
+  <h2 class="fw-bold mb-4 text-primary">
+    <i class="bi bi-shield-lock me-2"></i> Modifier le rôle : <%= role.display_name %>
+  </h2>
+
+  <form action="/settings/roles/update/<%= role.id %>" method="POST">
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="form-label">Nom à afficher</label>
+        <input type="text" name="display_name" class="form-control" value="<%= role.display_name %>" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Nom technique</label>
+        <input type="text" name="role_name" class="form-control" value="<%= role.role_name %>" required>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Description</label>
+      <textarea name="description" class="form-control" rows="2"><%= role.description %></textarea>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-bordered align-middle text-center">
+        <thead class="table-light">
+          <tr>
+            <th class="text-start">Module</th>
+            <th>Voir</th>
+            <th>Ajouter</th>
+            <th>Modifier</th>
+            <th>Supprimer</th>
+            <th>Approuver</th>
+            <th>Attribuer à tous</th>
+            <th>Modifier tout</th>
+            <th>Supprimer tout</th>
+            <th>Weekend</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%
+            const grouped = {};
+            permissions.forEach(p => {
+              if (!grouped[p.display_name]) grouped[p.display_name] = {};
+              const action = p.name.split('_')[0]; // ex: "view"
+              grouped[p.display_name][action] = p;
+            });
+
+            Object.keys(grouped).forEach(module => {
+              const perms = grouped[module];
+          %>
+            <tr>
+              <td class="text-start"><%= module %></td>
+              <% ['view', 'add', 'edit', 'delete', 'approve', 'assign_to_all', 'edit_all', 'delete_all', 'mark_weekend'].forEach(action => {
+                const p = perms[action];
+              %>
+                <td>
+                  <% if (p) { %>
+                    <input type="checkbox" name="perm[<%= p.name %>][<%= action %>]" <%= p[`can_${action}`] ? 'checked' : '' %>>
+                  <% } else { %>
+                    -
+                  <% } %>
+                </td>
+              <% }) %>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4">
+      <button type="submit" class="btn btn-primary">Mettre à jour</button>
+      <a href="/settings/roles" class="btn btn-secondary">Annuler</a>
+    </div>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>

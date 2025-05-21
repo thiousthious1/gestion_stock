@@ -1,0 +1,75 @@
+<%- include('../partials/header', { page: 'suppliers-add', pageGroup: 'suppliers' }) %>
+
+
+<div class="container mt-5 fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+      <i class="bi bi-truck"></i> Ajouter un Fournisseur
+    </h1>
+    <a href="/suppliers" class="btn btn-primary custom-retour">
+      <i class="bi bi-arrow-left-circle"></i> Retour à la liste
+    </a>
+  </div>
+  <%- include('../partials/breadcrumb', { parent: 'Fournisseurs', current: 'Ajouter Fournisseur' }) %>
+
+  <!--<% if (successMessage) { %>
+    <div class="alert alert-success shadow-sm"><%= successMessage %></div>
+  <% } %>
+  
+  <% if (errorMessage) { %>
+    <div class="alert alert-danger shadow-sm"><%= errorMessage %></div>
+  <% } %>-->
+  
+  <form action="/suppliers/add" method="POST" class="shadow p-4 rounded bg-light">
+    <div class="mb-3">
+      <label class="form-label fw-bold">Nom *</label>
+      <input type="text" name="name" class="form-control" placeholder="Nom du fournisseur" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-bold">Adresse</label>
+      <input type="text" name="contact" class="form-control" placeholder="Adresse du fournisseur">
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-bold">Téléphone</label>
+      <input type="text" name="phone" class="form-control" placeholder="Numéro de téléphone">
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-bold">Email</label>
+      <input type="email" name="email" class="form-control" placeholder="Adresse email">
+    </div>
+    <button type="submit" class="btn btn-success btn-lg custom-button">
+      <i class="bi bi-check-circle-fill"></i> Enregistrer
+    </button>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>
+
+<style>
+  .fade-in {
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .custom-retour {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .custom-retour:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0.5rem 1rem rgba(0, 123, 255, 0.5);
+  }
+
+  .custom-button {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .custom-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0.5rem 1rem rgba(25, 135, 84, 0.5); /* Vert vif */
+  }
+</style>

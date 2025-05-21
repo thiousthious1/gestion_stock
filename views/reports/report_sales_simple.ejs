@@ -1,0 +1,41 @@
+<%- include('../partials/header', { page: page, pageGroup: pageGroup }) %>
+
+
+<div class="container mt-5 fade-in">
+
+    <h1 class="fw-bold text-primary mb-4">
+        <i class="bi bi-graph-up"></i> Rapport des ventes
+    </h1>
+
+    <a href="/reports/sales/print" class="btn btn-secondary mb-3">
+        <i class="bi bi-printer"></i> Imprimer
+    </a>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Montant</th>
+                <th>Statut paiement</th>
+                <th>Vendeur</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% ventes.forEach(v => { %>
+                <tr>
+                    <td><%= v.id %></td>
+                    <td><%= v.created_at.toISOString().split('T')[0] %></td>
+                    <td><%= v.client_name || 'Non spécifié' %></td>
+                    <td><%= (v.total_amount || 0).toLocaleString('fr-FR', {minimumFractionDigits: 2}) %> FCFA</td>
+                    <td><%= v.payment_status %></td>
+                    <td><%= v.vendeur || 'Non attribué' %></td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+</div>
+
+<%- include('../partials/footer') %>

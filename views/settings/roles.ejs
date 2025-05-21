@@ -1,0 +1,129 @@
+<h2 class="fw-bold mb-4 text-primary">
+  <i class="bi bi-shield-lock me-2"></i> Rôles & Permissions
+</h2>
+
+<!-- Bouton d'ajout -->
+<!-- Boutons d'ajout -->
+<div class="d-flex justify-content-start gap-2 mb-3">
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRoleModal">
+    <i class="bi bi-plus-circle"></i> Ajouter un rôle
+  </button>
+  <a href="/permissions/add" class="btn btn-outline-success">
+    <i class="bi bi-shield-plus"></i> Ajouter une permission
+  </a>
+</div>
+
+
+<!-- Liste des rôles existants -->
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Nom du rôle</th>
+      <th>Description</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% roles.forEach(role => { %>
+      <tr>
+        <td><%= role.display_name %></td>
+        <td><%= role.description %></td>
+        <td>
+          <a href="/settings/roles/edit/<%= role.id %>" class="btn btn-sm btn-warning">
+            <i class="bi bi-pencil"></i>
+          </a>
+
+          <a href="/settings/roles/delete/<%= role.id %>" 
+            onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce rôle ?')"
+            class="btn btn-sm btn-danger">
+            <i class="bi bi-trash"></i>
+          </a>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+<!-- ✅ MODAL AJOUT DE RÔLE -->
+<div class="modal fade" id="addRoleModal" tabindex="-1" aria-labelledby="addRoleModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <form action="/settings/roles" method="POST">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addRoleModalLabel">Ajouter un nouveau rôle</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label class="form-label">Nom à afficher</label>
+              <input type="text" name="display_name" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Nom technique</label>
+              <input type="text" name="role_name" class="form-control" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="2"></textarea>
+          </div>
+
+          <!-- PERMISSIONS DYNAMIQUES -->
+          <table class="table table-bordered align-middle text-center">
+            <thead class="table-light">
+              <tr>
+                <th class="text-start">Module</th>
+                <th>Voir</th>
+                <th>Ajouter</th>
+                <th>Modifier</th>
+                <th>Supprimer</th>
+                <th>Approuver</th>
+                <th>Attribuer à tous</th>
+                <th>Modifier tout</th>
+                <th>Supprimer tout</th>
+                <th>Weekend</th>
+              </tr>
+            </thead>
+            <%
+              const groupedPermissions = {};
+              permissions.forEach(p => {
+                if (!groupedPermissions[p.display_name]) {
+                  groupedPermissions[p.display_name] = {};
+                }
+                const action = p.name.split('_')[0]; // view, add, edit...
+                groupedPermissions[p.display_name][action] = p.name; // ex: view → view_purchases
+              });
+            %>
+
+            <tbody>
+              <% Object.keys(groupedPermissions).forEach(module => { %>
+                <tr>
+                  <td class="text-start"><%= module %></td>
+                  <% ['view','add','edit','delete','approve','assign_to_all','edit_all','delete_all','mark_weekend'].forEach(action => { 
+                    const permName = groupedPermissions[module][action];
+                    const checked = permissions.find(p => p.name === permName && p[`can_${action}`]) ? 'checked' : '';
+                  %>
+                    <td>
+                      <% if (permName) { %>
+                        <input type="checkbox" name="perm[<%= permName %>][<%= action %>]" <%= checked %> >
+                      <% } else { %>
+                        -
+                      <% } %>
+                    </td>
+                  <% }) %>
+                </tr>
+              <% }) %>
+            </tbody>
+
+          </table>
+
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Créer</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

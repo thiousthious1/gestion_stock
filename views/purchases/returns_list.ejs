@@ -1,0 +1,62 @@
+<%- include('../partials/header', { page: 'purchase-returns', pageGroup: 'purchases' }) %>
+
+<div class="container mt-5 fade-in">
+    <h1 class="mb-4"><i class="bi bi-arrow-counterclockwise"></i> Liste des retours fournisseurs</h1>
+
+    <% if (successMessage && successMessage.length > 0) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= successMessage[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+
+    <% if (successMessage && successMessage.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= successMessage[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+
+    <% if (hasRight('add_purchase_returns', 'add')) { %>
+        <a href="/purchase-returns/add" class="btn btn-primary mb-3">
+            <i class="bi bi-plus-circle"></i> Ajouter un retour
+        </a>
+    <% } %>
+
+
+    <div class="table-responsive shadow-sm">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-primary">
+                <tr>
+                    <th>#</th>
+                    <th>Date du retour</th>
+                    <th>Achat associé</th>
+                    <th>Produits retournés</th>
+                    <th>Motif général</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% returns.forEach((ret, index) => { %>
+                    <tr>
+                        <td><%= index + 1 %></td>
+                        <td><%= ret.return_date.toISOString().split('T')[0] %></td>
+                        <td>Achat n°<%= ret.purchase_id %></td>
+                        <td><%= ret.products ? ret.products : '—' %></td>
+                        <td><%= ret.reason ? ret.reason : '—' %></td>
+                        <td>
+                            <% if (hasRight('view_purchase_returns', 'view')) { %>
+                                <a href="/purchase-returns/view/<%= ret.return_id %>" class="btn btn-sm btn-info">
+                                    <i class="bi bi-eye"></i> Détails
+                                </a>
+                            <% } %>
+
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

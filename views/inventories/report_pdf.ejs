@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport des inventaires</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; }
+        h1 { text-align: center; color: #0d6efd; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
+        th { background-color: #f2f2f2; }
+        .logo { height: 60px; }
+    </style>
+</head>
+<body>
+
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h1 style="color: #0d6efd;">Rapport consolidé des inventaires</h1>
+        <img src="<%= logo %>" class="logo" alt="Logo Happy Délices" style="height: 60px;">
+    </div>
+    
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Référence</th>
+                <th>Utilisateur</th>
+                <th>Nb ajustements</th>
+                <th>Note</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% inventories.forEach(function(inv) { %>
+                <tr>
+                    <td><%= inv.inventory_date.toISOString().split('T')[0] %></td>
+                    <td><%= inv.reference %></td>
+                    <td><%= inv.user_name %></td>
+                    <td><%= inv.nb_adjustments %></td>
+                    <td><%= inv.note %></td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+</body>
+</html>

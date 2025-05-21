@@ -1,0 +1,140 @@
+<%- include('../partials/header', { page: 'report-summary', pageGroup: 'reports' }) %>
+
+<div class="container mt-5 fade-in">
+
+    <h1 class="fw-bold text-primary mb-4">
+        <i class="bi bi-clipboard-data"></i> Synthèse globale
+    </h1>
+    <a href="/reports/summary/print?startDate=<%= debut %>&endDate=<%= fin %>" class="btn btn-secondary mb-3 no-print">
+        <i class="bi bi-printer"></i> Imprimer
+    </a>
+    
+    <!-- Formulaire de filtre période -->
+    <form method="get" action="/reports/summary" class="row g-3 mb-4 shadow-sm p-3 rounded bg-light">
+        <div class="col-md-4">
+            <label for="startDate" class="form-label">Date de début</label>
+            <input type="date" name="startDate" id="startDate" class="form-control" value="<%= debut %>" required>
+        </div>
+        <div class="col-md-4">
+            <label for="endDate" class="form-label">Date de fin</label>
+            <input type="date" name="endDate" id="endDate" class="form-control" value="<%= fin %>" required>
+        </div>
+        <div class="col-md-4 align-self-end">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-funnel"></i> Appliquer
+            </button>
+        </div>
+    </form>
+
+    <!-- Résultats étendus -->
+<div class="shadow-sm p-3 rounded bg-light mb-5">
+    <h4 class="mb-3">Analyse complète</h4>
+    <table class="table table-bordered">
+        <tr class="table-primary">
+            <th colspan="2">Résultat brut d’activité <small>(ventes - achats - dépenses)</small></th>
+        </tr>
+        <tr>
+            <th>Résultat brut</th>
+            <td>
+                <%= resultatBrut.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) %> FCFA
+                <% if (resultatBrut > 0) { %>
+                    <span class="badge bg-success">Profit</span>
+                <% } else if (resultatBrut < 0) { %>
+                    <span class="badge bg-danger">Perte</span>
+                <% } else { %>
+                    <span class="badge bg-secondary">Équilibre</span>
+                <% } %>
+            </td>
+        </tr>
+        <tr class="table-primary">
+            <th colspan="2">Résultat net réel (Trésorerie)</th>
+        </tr>
+        <tr>
+            <th>Total paiements reçus (clients)</th>
+            <td><%= totalRecus.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) %> FCFA</td>
+        </tr>
+        <tr>
+            <th>Total paiements effectués (achats)</th>
+            <td><%= totalPayes.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) %> FCFA</td>
+        </tr>
+        <tr>
+            <th>Total dépenses</th>
+            <td><%= totalDepenses.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) %> FCFA</td>
+        </tr>
+        <tr>
+            <th>Résultat net (trésorerie)</th>
+            <td>
+                <%= resultatNet.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) %> FCFA
+                <% if (resultatNet > 0) { %>
+                    <span class="badge bg-success">Excédent</span>
+                <% } else if (resultatNet < 0) { %>
+                    <span class="badge bg-danger">Déficit</span>
+                <% } else { %>
+                    <span class="badge bg-secondary">Équilibre</span>
+                <% } %>
+            </td>
+        </tr>
+    </table>
+</div>
+
+
+    <!-- Graphique -->
+    <div class="shadow-sm p-3 rounded bg-light">
+        <h4 class="mb-3">Évolution mensuelle (ventes vs dépenses)</h4>
+        <canvas id="evolutionChart" height="100"></canvas>
+    </div>
+
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('evolutionChart').getContext('2d');
+
+    const ventesLabels = <%- JSON.stringify(evolutionVentes.map(e => e.mois)) %>;
+    const ventesData = <%- JSON.stringify(evolutionVentes.map(e => parseFloat(e.total) || 0)) %>;
+
+    const depensesLabels = <%- JSON.stringify(evolutionDepenses.map(e => e.mois)) %>;
+    const depensesData = <%- JSON.stringify(evolutionDepenses.map(e => parseFloat(e.total) || 0)) %>;
+
+    const allLabels = Array.from(new Set([...ventesLabels, ...depensesLabels])).sort();
+
+    const ventesSeries = allLabels.map(m => {
+        const index = ventesLabels.indexOf(m);
+        return index !== -1 ? ventesData[index] : 0;
+    });
+
+    const depensesSeries = allLabels.map(m => {
+        const index = depensesLabels.indexOf(m);
+        return index !== -1 ? depensesData[index] : 0;
+    });
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: allLabels,
+            datasets: [
+                {
+                    label: 'Ventes',
+                    data: ventesSeries,
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)'
+                },
+                {
+                    label: 'Dépenses',
+                    data: depensesSeries,
+                    backgroundColor: 'rgba(255, 99, 132, 0.7)'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+<%- include('../partials/footer') %>

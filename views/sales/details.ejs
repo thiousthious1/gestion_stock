@@ -1,0 +1,61 @@
+<%- include('../partials/header', { page: 'sales', pageGroup: 'sales' }) %>
+
+<div class="container mt-5 fade-in">
+    <h1>Détails Vente #SALE-<%= sale.id %></h1>
+    <p><strong>Client :</strong> <%= sale.customer_name || 'Client Passager' %></p>
+    <p><strong>Date :</strong> <%= new Date(sale.created_at).toLocaleDateString() %></p>
+    <p><strong>Total :</strong> <%= sale.total_amount.toLocaleString() %> CFA</p>
+    <p><strong>Statut Paiement :</strong> <%= sale.payment_status %></p>
+
+    <h3>Produits :</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Produit</th><th>Quantité</th><th>Prix Unitaire</th><th>Remise</th><th>Taxe</th><th>Total Ligne</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% details.forEach(item => { %>
+                <tr>
+                    <td><%= item.product_name %></td>
+                    <td><%= item.quantity %></td>
+                    <td><%= item.unit_price %></td>
+                    <td><%= item.discount %> %</td>
+                    <td><%= item.tax %> %</td>
+                    <td>
+                        <% let lineTotal = item.unit_price * item.quantity;
+                           lineTotal -= (lineTotal * item.discount / 100);
+                           lineTotal += (lineTotal * item.tax / 100); %>
+                        <%= lineTotal.toLocaleString() %> CFA
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+
+    <h3>Paiements :</h3>
+    <% if (payments.length === 0) { %>
+        <p>Aucun paiement enregistré.</p>
+    <% } else { %>
+        <ul>
+            <% payments.forEach(pay => { %>
+                <li><%= pay.amount_paid %> CFA le <%= new Date(pay.payment_date).toLocaleDateString() %></li>
+            <% }) %>
+        </ul>
+    <% } %>
+
+    <h3>Retours :</h3>
+    <% if (returns.length === 0) { %>
+        <p>Aucun retour produit.</p>
+    <% } else { %>
+        <ul>
+            <% returns.forEach(ret => { %>
+                <li><%= ret.amount %> CFA retourné le <%= new Date(ret.return_date).toLocaleDateString() %></li>
+            <% }) %>
+        </ul>
+    <% } %>
+
+    <a href="/sales/history" class="btn btn-secondary mt-3">Retour à l'historique</a>
+</div>
+
+<%- include('../partials/footer') %>

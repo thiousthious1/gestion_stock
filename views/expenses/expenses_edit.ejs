@@ -1,0 +1,52 @@
+<%- include('../partials/header', { page: 'expenses', pageGroup: 'expenses' }) %>
+
+<%- include('../partials/breadcrumb', { parent: 'Dépenses', current: 'Modifier la dépense' }) %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+        <i class="bi bi-cash-coin"></i> Modifier la dépense
+    </h1>
+    <a href="/expenses" class="btn btn-secondary">
+        <i class="bi bi-arrow-left-circle"></i> Retour à la liste
+    </a>
+</div>
+
+<form action="/expenses/edit/<%= expense.id %>" method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label class="form-label fw-bold">Catégorie</label>
+        <select name="category_id" class="form-select" required>
+            <% categories.forEach(function(category) { %>
+                <option value="<%= category.id %>" <%= (category.id === expense.category_id) ? 'selected' : '' %>><%= category.name %></option>
+            <% }); %>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Montant</label>
+        <input type="number" name="amount" class="form-control" value="<%= expense.amount %>" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Description</label>
+        <textarea name="description" class="form-control"><%= expense.description %></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Date</label>
+        <input type="date" name="expense_date" class="form-control" value="<%= expense.expense_date.toISOString().split('T')[0] %>" required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Changer la pièce justificative</label>
+        <input type="file" name="attachment" class="form-control">
+        <% if (expense.attachment) { %>
+            <small>Visualiser le document actuel : <a href="/uploads/expenses/<%= expense.attachment %>" target="_blank">Voir</a></small>
+        <% } %>
+    </div>
+
+    <button type="submit" class="btn btn-success">
+        <i class="bi bi-save"></i> Enregistrer
+    </button>
+</form>
+
+<%- include('../partials/footer') %>

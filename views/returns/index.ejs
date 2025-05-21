@@ -1,0 +1,82 @@
+<%- include('../partials/header', { page: 'returns-history', pageGroup: 'sales' }) %>
+
+
+
+<div class="container mt-5 fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+      <i class="bi bi-arrow-counterclockwise"></i> Historique des retours de produits
+    </h1>
+    <a href="/sales/history" class="btn btn-primary custom-retour">
+      <i class="bi bi-arrow-left-circle"></i> Retour aux ventes
+    </a>
+  </div>
+  <%- include('../partials/breadcrumb', { parent: 'Transactions', current: 'Historique des retours' }) %>
+
+
+  <% if (returns.length === 0) { %>
+    <div class="alert alert-info shadow-sm">Aucun retour enregistré pour le moment.</div>
+  <% } else { %>
+    <div class="table-responsive shadow-sm">
+      <table class="table table-bordered align-middle table-hover">
+        <thead class="table-light text-center">
+          <tr>
+            <th>#</th>
+            <th>Réf. Vente</th>
+            <th>Produit</th>
+            <th>Quantité retournée</th>
+            <th>Motif</th>
+            <th>Date du retour</th>
+            <th>Remboursé ?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% returns.forEach((r, index) => { %>
+            <tr>
+              <td><%= index + 1 %></td>
+              <td>Vente #<%= r.sale_ref %></td>
+              <td><%= r.product_name %></td>
+              <td><%= r.quantity %></td>
+              <td><%= r.reason || '---' %></td>
+              <td><%= new Date(r.return_date).toLocaleString() %></td>
+              <td>
+                <% if (r.refunded) { %>
+                  <span class="badge bg-success">Oui</span>
+                <% } else { %>
+                  <span class="badge bg-secondary">Non</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</div>
+
+<%- include('../partials/footer') %>
+
+<style>
+  .fade-in {
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .custom-retour {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .custom-retour:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0.5rem 1rem rgba(0, 123, 255, 0.5);
+  }
+
+  table tbody tr:hover {
+    background-color: #f1f1f1;
+    transition: background-color 0.3s;
+  }
+</style>

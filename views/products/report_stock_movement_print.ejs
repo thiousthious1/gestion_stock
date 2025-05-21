@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mouvement journalier du stock - Impression</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+        }
+        .logo {
+            max-height: 80px;
+        }
+    </style>
+</head>
+<body class="p-4">
+
+    <!-- Logo et titre -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <img src="/images/logo_happy.jpg" alt="Logo" class="logo">
+        </div>
+        <div>
+            <h2 class="fw-bold text-primary">Mouvement journalier du stock</h2>
+        </div>
+    </div>
+
+    <!-- Boutons -->
+    <div class="mb-4 no-print">
+        <a href="/products/report/stock-movement" class="btn btn-secondary me-2">
+            <i class="bi bi-arrow-left"></i> Retour
+        </a>
+        <button class="btn btn-success" onclick="window.print()">
+            <i class="bi bi-printer-fill"></i> Imprimer
+        </button>
+    </div>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Produit</th>
+                <th>Stock début journée</th>
+                <th>Stock actuel</th>
+                <th>Écart</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% mouvements.forEach(row => { %>
+                <tr>
+                    <td><%= row.nom %></td>
+                    <td><%= row.stock_debut.toLocaleString('fr-FR', { minimumFractionDigits: 0 }) %></td>
+                    <td><%= row.stock_actuel.toLocaleString('fr-FR', { minimumFractionDigits: 0 }) %></td>
+                    <td>
+                        <%= row.ecart.toLocaleString('fr-FR', { minimumFractionDigits: 0 }) %>
+                        <% if (row.ecart > 0) { %>
+                            <span class="badge bg-success">+</span>
+                        <% } else if (row.ecart < 0) { %>
+                            <span class="badge bg-danger">-</span>
+                        <% } else { %>
+                            <span class="badge bg-secondary">0</span>
+                        <% } %>
+                    </td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+</body>
+</html>

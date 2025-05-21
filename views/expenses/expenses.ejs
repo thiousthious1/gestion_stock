@@ -1,0 +1,175 @@
+<%- include('../partials/header', { page: 'expenses', pageGroup: 'expenses' }) %>
+
+<%- include('../partials/breadcrumb', { parent: 'Dépenses', current: 'Liste des dépenses' }) %>
+
+<% if (success) { %>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: '<%= success %>',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        });
+    </script>
+<% } %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+        <i class="bi bi-cash-coin"></i> Liste des dépenses
+    </h1>
+    <% if (hasRight('add_expenses', 'add')) { %>
+        <a href="/expenses/add" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nouvelle dépense
+        </a>
+    <% } %>
+
+</div>
+
+<table id="expensesTable" class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Catégorie</th>
+            <th>Description</th>
+            <th>Montant</th>
+            <th>Pièce justificative</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (expenses.length > 0) { %>
+            <% expenses.forEach(function(expense) { %>
+                <tr>
+                    <td><%= new Date(expense.expense_date).toLocaleDateString('fr-FR') %></td>
+                    <td><%= expense.category_name %></td>
+                    <td><%= expense.description %></td>
+                    <td><%= expense.amount.toLocaleString('fr-FR', { minimumFractionDigits: 2 }) %> FCFA</td>
+                    <td>
+                        <% if (expense.attachment) { %>
+                            <a href="/uploads/expenses/<%= expense.attachment %>" target="_blank">Voir</a>
+                        <% } else { %>
+                            -
+                        <% } %>
+                    </td>
+                    <td>
+                        <% if (hasRight('edit_expenses', 'edit')) { %>
+                            <a href="/expenses/edit/<%= expense.id %>" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        <% } %>
+                        <% if (hasRight('delete_expenses', 'delete')) { %>
+                            <a href="/expenses/delete/<%= expense.id %>" class="btn btn-sm btn-danger btn-delete">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        <% } %>
+                    </td>                    
+                </tr>
+            <% }); %>
+        <% } else { %>
+            <tr>
+                <td colspan="6">Aucune dépense enregistrée.</td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+
+<%- include('../partials/footer') %>
+
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- Boutons export -->
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>-->
+
+<script>
+    $(document).ready(function () {
+      $('#expensesTable').DataTable({
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json' },
+        responsive: true,
+        dom: 'Bfrtip',
+        buttons: [
+          {
+              extend: 'copy',
+              text: '<i class="bi bi-clipboard"></i> Copier',
+              className: 'btn btn-secondary',
+              exportOptions: {
+                    columns: ':not(:last-child)' // On exclut le "+" et la colonne Action
+                }
+          },
+          {
+              extend: 'excel',
+              text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+              className: 'btn btn-success',
+              exportOptions: {
+                    columns: ':not(:last-child)' // On exclut le "+" et la colonne Action
+                }
+          },
+          {
+              extend: 'csv',
+              text: '<i class="bi bi-filetype-csv"></i> CSV',
+              className: 'btn btn-info',
+              exportOptions: {
+                    columns: ':not(:last-child)' // On exclut le "+" et la colonne Action
+                }
+          },
+          {
+              extend: 'pdf',
+              text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
+              className: 'btn btn-danger',
+              exportOptions: {
+                    columns: ':not(:last-child)' // On exclut le "+" et la colonne Action
+                }
+          },
+          {
+              extend: 'print',
+              text: '<i class="bi bi-printer"></i> Imprimer',
+              className: 'btn btn-primary',
+              exportOptions: {
+                    columns: ':not(:last-child)' // On exclut le "+" et la colonne Action
+                }
+          }
+      ]
+  
+      });
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.querySelectorAll('.btn-delete').forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = this.getAttribute('href');
+            Swal.fire({
+                title: 'Confirmer la suppression',
+                text: "Voulez-vous vraiment supprimer cette dépense ?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Oui, supprimer',
+                cancelButtonText: 'Annuler'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = url;
+                }
+            });
+        });
+    });
+</script>
+

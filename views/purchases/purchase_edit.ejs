@@ -1,0 +1,95 @@
+<%- include('../partials/header', { page: 'purchases', pageGroup: 'purchases' }) %>
+
+<div class="container mt-5 fade-in">
+    <h1 class="mb-4"><i class="bi bi-pencil-square"></i> Modifier l'achat n°<%= purchase.id %></h1>
+
+    <% if (successMessage && successMessage.length > 0) { %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= successMessage[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+
+    <% if (successMessage && successMessage.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= successMessage[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+
+    <form action="/purchases/update/<%= purchase.id %>" method="POST">
+        <div class="mb-3">
+            <label for="supplier_id" class="form-label">Fournisseur</label>
+            <select name="supplier_id" id="supplier_id" class="form-select" required>
+                <option value="">-- Choisir un fournisseur --</option>
+                <% suppliers.forEach(s => { %>
+                    <option value="<%= s.id %>" <%= s.id === purchase.supplier_id ? 'selected' : '' %>>
+                        <%= s.name %>
+                    </option>
+                <% }) %>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="purchase_date" class="form-label">Date d'achat</label>
+            <input type="date" name="purchase_date" id="purchase_date" class="form-control"
+                   value="<%= purchase.purchase_date.toISOString().split('T')[0] %>" required>
+        </div>
+
+        <h4 class="mt-4">Produits achetés</h4>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th>Quantité</th>
+                    <th>Prix unitaire</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% purchaseDetails.forEach((item, index) => { %>
+                    <tr>
+                        <td>
+                            <select name="products[<%= index %>][product_id]" class="form-select" required>
+                                <option value="">-- Choisir un produit --</option>
+                                <% products.forEach(prod => { %>
+                                    <option value="<%= prod.id %>" 
+                                        <%= prod.id === item.product_id ? 'selected' : '' %>>
+                                        <%= prod.nom %>
+                                    </option>
+                                <% }) %>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" name="products[<%= index %>][quantity]" 
+                                   class="form-control" min="1"
+                                   value="<%= item.quantity %>" required>
+                        </td>
+                        <td>
+                            <input type="number" name="products[<%= index %>][unit_price]" 
+                                   class="form-control" step="0.01" min="0"
+                                   value="<%= item.unit_price %>" required>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+        <div class="mb-3">
+            <label for="total_amount" class="form-label">Nouveau montant total de l'achat (FCFA)</label>
+            <input type="number" name="total_amount" id="total_amount" step="0.01" min="0"
+                class="form-control" value="<%= purchase.total_amount || 0 %>" required>
+        </div>
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <strong>Attention :</strong> 
+            Veuillez modifier le total achat si necessaire.
+        </div>
+
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-circle"></i> Mettre à jour l'achat
+        </button>
+        <a href="/purchases" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+
+<%- include('../partials/footer') %>

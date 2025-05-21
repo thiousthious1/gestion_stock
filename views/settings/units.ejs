@@ -1,0 +1,95 @@
+<h2 class="fw-bold mb-4 text-primary"><i class="bi bi-grid-3x3-gap me-2"></i> Unités de mesure</h2>
+
+<% if (successMessage) { %>
+  <div class="alert alert-success"><%= successMessage %></div>
+<% } %>
+
+<!-- Bouton Ajouter -->
+<button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addUnitModal">
+  <i class="bi bi-plus-circle"></i> Ajouter une unité
+</button>
+
+<!-- Tableau -->
+<div class="table-responsive">
+  <table class="table table-bordered align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>Nom complet</th>
+        <th>Abréviation</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% units.forEach(unit => { %>
+        <tr>
+          <td><%= unit.name %></td>
+          <td><%= unit.short_name %></td>
+          <td>
+            <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editUnitModal<%= unit.id %>">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <form action="/settings/units/delete/<%= unit.id %>" method="POST" class="d-inline">
+              <button class="btn btn-sm btn-danger" onclick="return confirm('Supprimer cette unité ?')">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<!-- MODAL AJOUT -->
+<div class="modal fade" id="addUnitModal" tabindex="-1">
+  <div class="modal-dialog">
+    <form action="/settings/units/add" method="POST" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Ajouter une unité</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Nom complet</label>
+          <input type="text" name="name" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Abréviation</label>
+          <input type="text" name="short_name" class="form-control" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" type="submit">Créer</button>
+        <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODALS MODIF -->
+<% units.forEach(unit => { %>
+  <div class="modal fade" id="editUnitModal<%= unit.id %>" tabindex="-1">
+    <div class="modal-dialog">
+      <form action="/settings/units/edit/<%= unit.id %>" method="POST" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Modifier unité</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nom complet</label>
+            <input type="text" name="name" value="<%= unit.name %>" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Abréviation</label>
+            <input type="text" name="short_name" value="<%= unit.short_name %>" class="form-control" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" type="submit">Modifier</button>
+          <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+<% }) %>

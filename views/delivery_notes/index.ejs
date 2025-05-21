@@ -1,0 +1,77 @@
+<%- include('../partials/header', { page: 'delivery-notes', pageGroup: 'sales' }) %>
+
+<div class="container mt-4">
+  <h1 class="fw-bold text-primary mb-4"><i class="bi bi-truck"></i> Bons de Livraison</h1>
+
+  <form method="GET" class="mb-3 d-flex align-items-center gap-2">
+    <label class="form-label mb-0">Filtrer par statut :</label>
+    <select name="status" class="form-select w-auto">
+      <option value="">-- Tous --</option>
+      <option value="en attente" <%= selectedStatus === 'en attente' ? 'selected' : '' %>>En attente</option>
+      <option value="partiellement livré" <%= selectedStatus === 'partiellement livré' ? 'selected' : '' %>>Partiellement livré</option>
+      <option value="livré" <%= selectedStatus === 'livré' ? 'selected' : '' %>>Livré</option>
+    </select>
+    <button type="submit" class="btn btn-sm btn-primary">Filtrer</button>
+  </form>
+
+  <div class="table-responsive shadow-sm">
+    <table class="table table-bordered" id="deliveryNotesTable">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>Client</th>
+          <th>Date</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% notes.forEach(note => { %>
+          <tr>
+            <td><%= note.id %></td>
+            <td><%= note.customer_name || 'Client inconnu' %></td>
+            <td><%= new Date(note.delivery_date).toLocaleDateString('fr-FR') %></td>
+            <td>
+              <% if (note.status === 'en attente') { %>
+                <span class="badge bg-secondary">En attente</span>
+              <% } else if (note.status === 'livré') { %>
+                <span class="badge bg-success">Livré</span>
+              <% } else if (note.status === 'partiellement livré') { %>
+                <span class="badge bg-warning text-dark">Partiellement livré</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (hasRight('view_delivery_notes', 'view')) { %>
+                <a href="/delivery-notes/<%= note.id %>" class="btn btn-sm btn-outline-info">Voir</a>
+                <a href="/delivery-notes/<%= note.id %>/print" target="_blank" class="btn btn-sm btn-outline-secondary">Imprimer</a>
+              <% } %>
+
+              <% if (hasRight('edit_delivery_notes', 'edit')) { %>
+                <a href="/delivery-notes/<%= note.id %>/edit" class="btn btn-sm btn-outline-warning">Modifier</a>
+              <% } %>
+
+              <% if (hasRight('delete_delivery_notes', 'delete')) { %>
+                <form action="/delivery-notes/<%= note.id %>/delete" method="POST" style="display: inline;" onsubmit="return confirm('Confirmer la suppression ?')">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    $('#deliveryNotesTable').DataTable({
+      language: {
+        url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/fr-FR.json'
+      },
+      order: [[0, 'desc']]
+    });
+  });
+</script>
+
+<%- include('../partials/footer') %>

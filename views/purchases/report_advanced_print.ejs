@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport avancé des achats (Version imprimable)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        header img {
+            max-height: 80px;
+            margin-bottom: 10px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .btn-print, .btn-back {
+            margin: 10px 5px;
+            padding: 10px 15px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+        .text-right {
+            text-align: right;
+        }
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #555;
+        }
+        @media print {
+            .btn-print, .btn-back {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="/images/logo_happy.jpg" alt="Logo entreprise">
+    <h1>Rapport avancé des achats</h1>
+    <p><strong>Période :</strong>
+        <%= startDate ? startDate : '---' %> au <%= endDate ? endDate : '---' %>
+    </p>
+
+    <button class="btn-print" onclick="window.print()">Imprimer</button>
+    <a href="/purchases/report/advanced" class="btn-back">Retour</a>
+</header>
+
+<h3>Détails des achats</h3>
+<table>
+    <thead>
+        <tr>
+            <th># Achat</th>
+            <th>Date</th>
+            <th>Fournisseur</th>
+            <th>Produit</th>
+            <th>Quantité</th>
+            <th>Prix unitaire</th>
+            <th>Montant total</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% let total = 0; %>
+        <% if (results.length > 0) { %>
+            <% results.forEach(function(row) { %>
+                <tr>
+                    <td><%= row.purchase_id %></td>
+                    <td><%= row.purchase_date ? row.purchase_date.toISOString().split('T')[0] : '' %></td>
+                    <td><%= row.supplier_name || 'Non spécifié' %></td>
+                    <td><%= row.product_name || 'Non spécifié' %></td>
+                    <td><%= row.quantity %></td>
+                    <td><%= row.purchase_price ? parseFloat(row.purchase_price).toFixed(2) : '0.00' %> FCFA</td>
+                    <td><%= row.total_amount ? parseFloat(row.total_amount).toFixed(2) : '0.00' %> FCFA</td>
+                </tr>
+                <% total += parseFloat(row.total_amount || 0); %>
+            <% }) %>
+        <% } else { %>
+            <tr>
+                <td colspan="7" class="text-center">Aucun achat trouvé pour la période sélectionnée.</td>
+            </tr>
+        <% } %>
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="6" class="text-right">Montant total TTC :</th>
+            <th><%= parseFloat(total || 0).toFixed(2) %> FCFA</th>
+        </tr>
+    </tfoot>
+</table>
+
+<h3>Totaux par fournisseur</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Fournisseur</th>
+            <th>Total achats</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (totauxParFournisseur.length > 0) { %>
+            <% totauxParFournisseur.forEach(function(row) { %>
+                <tr>
+                    <td><%= row.supplier_name || 'Non spécifié' %></td>
+                    <td class="text-right"><%= row.total_achats ? parseFloat(row.total_achats).toFixed(2) : '0.00' %> FCFA</td>
+                </tr>
+            <% }) %>
+        <% } else { %>
+            <tr>
+                <td colspan="2" class="text-center">Aucun fournisseur trouvé.</td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+
+<h3>Totaux par catégorie</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Catégorie</th>
+            <th>Total achats</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (totauxParCategorie.length > 0) { %>
+            <% totauxParCategorie.forEach(function(row) { %>
+                <tr>
+                    <td><%= row.category_name || 'Non spécifiée' %></td>
+                    <td class="text-right"><%= row.total_achats ? parseFloat(row.total_achats).toFixed(2) : '0.00' %> FCFA</td>
+                </tr>
+            <% }) %>
+        <% } else { %>
+            <tr>
+                <td colspan="2" class="text-center">Aucune catégorie trouvée.</td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+
+<footer>
+    © <%= new Date().getFullYear() %> Votre entreprise — Tous droits réservés.
+</footer>
+
+</body>
+</html>

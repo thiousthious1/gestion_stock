@@ -1,0 +1,129 @@
+<%- include('../partials/header', { page: 'returns-add', pageGroup: 'sales' }) %>
+
+
+<div class="container mt-5 fade-in">
+  <% if (errorMessage) { %>
+    <div class="alert alert-danger shadow-sm"><%= errorMessage %></div>
+  <% } %>
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+      <i class="bi bi-arrow-counterclockwise"></i> Retour de produits
+    </h1>
+    <a href="/returns" class="btn btn-primary custom-retour">
+      <i class="bi bi-arrow-left-circle"></i> Historique des retours
+    </a>
+  </div>
+  <%- include('../partials/breadcrumb', { parent: 'Retours', current: 'Retour produit' }) %>
+
+  <form method="GET" action="/returns/add" class="shadow-sm p-3 rounded bg-light mb-4">
+    <div class="mb-3">
+      <label for="saleSelect" class="form-label fw-bold">Sélectionnez une vente</label>
+      <select name="saleId" id="saleSelect" class="form-select" onchange="this.form.submit()" required>
+        <option value="">-- Choisir une vente --</option>
+        <% sales.forEach(sale => { %>
+          <option value="<%= sale.id %>" <%= selectedSale == sale.id ? 'selected' : '' %>>Vente #<%= sale.id %></option>
+        <% }) %>
+      </select>
+    </div>
+  </form>
+
+  <% if (products.length > 0) { %>
+    <form method="POST" action="/returns/add" class="shadow-sm p-4 rounded bg-light">
+      <input type="hidden" name="sale_id" value="<%= selectedSale %>">
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Produit</th>
+              <th>Quantité vendue</th>
+              <th>Quantité à retourner</th>
+              <th>Motif</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% products.forEach((product, index) => { %>
+              <tr>
+                <td><%= product.name %></td>
+                <td><%= product.sold_qty %></td>
+                <td>
+                  <input type="hidden" name="product_ids[]" value="<%= product.product_id %>">
+                  <input type="number" name="quantities[]" min="0" max="<%= product.maxReturnable %>" class="form-control" required>
+                </td>
+                <td><input type="text" name="reasons[]" class="form-control" placeholder="Motif (optionnel)"></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+      <button type="submit" class="btn btn-success btn-lg custom-button">
+        <i class="bi bi-check-circle-fill"></i> Valider le retour
+      </button>
+    </form>
+  <% } %>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const quantityInputs = document.querySelectorAll('input[name="quantities[]"]');
+
+    quantityInputs.forEach(input => {
+      input.addEventListener('input', () => {
+        const max = parseFloat(input.getAttribute('max'));
+        const val = parseFloat(input.value);
+
+        if (val > max) {
+          input.classList.add('is-invalid');
+          if (!input.nextElementSibling || !input.nextElementSibling.classList.contains('invalid-feedback')) {
+            const feedback = document.createElement('div');
+            feedback.className = 'invalid-feedback';
+            feedback.textContent = `La quantité ne peut pas dépasser ${max}`;
+            input.parentNode.appendChild(feedback);
+          }
+        } else {
+          input.classList.remove('is-invalid');
+          if (input.nextElementSibling && input.nextElementSibling.classList.contains('invalid-feedback')) {
+            input.nextElementSibling.remove();
+          }
+        }
+      });
+    });
+  });
+</script>
+
+
+<%- include('../partials/footer') %>
+
+<style>
+  .fade-in {
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .custom-retour {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .custom-retour:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0.5rem 1rem rgba(0, 123, 255, 0.5);
+  }
+
+  .custom-button {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .custom-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0.5rem 1rem rgba(25, 135, 84, 0.5); /* Vert vif */
+  }
+
+  table tbody tr:hover {
+    background-color: #f1f1f1;
+    transition: background-color 0.3s;
+  }
+</style>

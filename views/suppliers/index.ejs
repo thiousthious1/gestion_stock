@@ -1,0 +1,102 @@
+<%- include('../partials/header', { page: 'suppliers', pageGroup: 'suppliers' }) %>
+
+<div class="container mt-5 fade-in">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+      <i class="bi bi-truck"></i> Liste des Fournisseurs
+    </h1>
+    <% if (hasRight('add_suppliers', 'add')) { %>
+      <a href="/suppliers/add" class="btn btn-success custom-retour">
+        <i class="bi bi-plus-circle-fill"></i> Ajouter un fournisseur
+      </a>
+    <% } %>
+
+  </div>
+  <%- include('../partials/breadcrumb', { parent: 'Fournisseurs', current: 'Liste des fournisseurs' }) %>
+
+  <% if (successMessage) { %>
+    <div class="alert alert-success shadow-sm"><%= successMessage %></div>
+  <% } %>
+
+  <div class="table-responsive shadow-sm">
+    <table class="table table-bordered align-middle">
+      <thead class="table-light text-center">
+        <tr>
+          <th>Nom</th>
+          <th>Contact</th>
+          <th>Téléphone</th>
+          <th>Email</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% suppliers.forEach(s => { %>
+          <tr>
+            <td><%= s.name %></td>
+            <td><%= s.contact %></td>
+            <td><%= s.phone %></td>
+            <td><%= s.email %></td>
+            <td class="text-center">
+              <% if (hasRight('edit_suppliers', 'edit')) { %>
+                <a href="/suppliers/edit/<%= s.id %>" class="btn btn-warning btn-sm">
+                  ✏️ Modifier
+                </a>
+              <% } %>
+
+              <% if (hasRight('delete_suppliers', 'delete')) { %>
+                <a href="/suppliers/delete/<%= s.id %>" class="btn btn-danger btn-sm" onclick="return confirm('Confirmer la suppression ?')">
+                  🗑️ Supprimer
+                </a>
+              <% } %>
+
+              <% if (hasRight('view_suppliers', 'view')) { %>
+                <a href="/suppliers/<%= s.id %>/history" class="btn btn-info btn-sm">
+                  📜 Historique
+                </a>
+              <% } %>
+
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
+
+<style>
+  .fade-in {
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .custom-retour {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .custom-retour:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0.5rem 1rem rgba(40, 167, 69, 0.5); /* Vert vif */
+  }
+</style>
+
+<% if (successMessage) { %>
+  <script>
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: '<%= successMessage %>',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  </script>
+<% } %>
+

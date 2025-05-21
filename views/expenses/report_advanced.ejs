@@ -1,0 +1,106 @@
+<%- include('../partials/header', { page: page, pageGroup: pageGroup }) %>
+
+
+<div class="container mt-5 fade-in">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="fw-bold text-primary">
+            <i class="bi bi-cash-stack"></i> Rapport des Dépenses
+        </h1>
+    </div>
+
+    <!-- Formulaire de filtre période -->
+    <form method="get" action="/expenses/report/advanced" class="row g-3 mb-4 shadow-sm p-3 rounded bg-light">
+        <div class="col-md-4">
+            <label for="startDate" class="form-label">Date de début</label>
+            <input type="date" name="startDate" id="startDate" class="form-control" value="<%= startDate %>" required>
+        </div>
+        <div class="col-md-4">
+            <label for="endDate" class="form-label">Date de fin</label>
+            <input type="date" name="endDate" id="endDate" class="form-control" value="<%= endDate %>" required>
+        </div>
+        <div class="col-md-4 align-self-end">
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-funnel"></i> Filtrer
+            </button>
+            <% if (expenses && expenses.length > 0) { %>
+            <a href="/expenses/report/advanced/print?startDate=<%= startDate %>&endDate=<%= endDate %>" class="btn btn-secondary">
+                <i class="bi bi-printer"></i> Imprimer
+            </a>
+            <% } %>
+        </div>
+    </form>
+
+    <!-- Tableau des dépenses -->
+    <% if (expenses && expenses.length > 0) { %>
+        <div class="table-responsive shadow-sm">
+            <table class="table table-bordered align-middle table-hover" id="expensesTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Date</th>
+                        <th>Catégorie</th>
+                        <th>Description</th>
+                        <th>Montant (FCFA)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% let total = 0; %>
+                    <% expenses.forEach(row => { %>
+                        <tr>
+                            <td><%= row.expense_date.toISOString().split('T')[0] %></td>
+                            <td><%= row.category_name || 'Non spécifié' %></td>
+                            <td><%= row.description || '—' %></td>
+                            <td><%= (parseFloat(row.amount) || 0).toFixed(2) %></td>
+                        </tr>
+                        <% total += parseFloat(row.amount); %>
+                    <% }) %>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="3" class="text-end">Total général</th>
+                        <th><%= total.toFixed(2) %> FCFA</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Totaux par catégorie -->
+        <div class="mt-4 shadow-sm p-3 bg-light rounded">
+            <h4>Totaux par catégorie</h4>
+            <ul class="list-group">
+                <% totauxParCategorie.forEach(cat => { %>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <%= cat.category_name || 'Non spécifié' %>
+                        <span class="badge bg-primary rounded-pill"><%= (parseFloat(cat.total_depenses) || 0).toFixed(2) %> FCFA</span>
+
+                    </li>
+                <% }) %>
+            </ul>
+        </div>
+
+    <% } else if (startDate && endDate) { %>
+        <div class="alert alert-warning shadow-sm">
+            Aucune dépense trouvée pour la période sélectionnée.
+        </div>
+    <% } %>
+
+</div>
+
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#expensesTable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json'
+            },
+            order: [[0, 'asc']]
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>

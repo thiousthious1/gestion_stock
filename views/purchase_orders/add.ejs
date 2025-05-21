@@ -1,0 +1,97 @@
+<%- include('../partials/header', { page: 'purchase_orders', pageGroup: 'purchases' }) %>
+
+<div class="container mt-4">
+  <h1 class="fw-bold text-primary mb-4"><i class="bi bi-file-earmark-plus"></i> Nouveau Bon de Commande</h1>
+
+  <form action="/purchase-orders/add" method="POST">
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="supplier_id" class="form-label">Fournisseur</label>
+        <select name="supplier_id" id="supplier_id" class="form-select" required>
+          <option value="">-- Choisir --</option>
+          <% suppliers.forEach(s => { %>
+            <option value="<%= s.id %>"><%= s.name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label for="order_date" class="form-label">Date de commande</label>
+        <input type="date" name="order_date" id="order_date" class="form-control" value="<%= new Date().toISOString().slice(0,10) %>" required>
+      </div>
+    </div>
+
+    <hr>
+
+    <h5 class="text-secondary">Produits commandés</h5>
+    <table class="table table-bordered align-middle" id="productsTable">
+      <thead class="table-light">
+        <tr>
+          <th>Produit</th>
+          <th>Quantité</th>
+          <th>Prix Unitaire</th>
+          <th>Remise (%)</th>
+          <th>TVA (%)</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <select name="products[0][product_id]" class="form-select" required>
+              <% products.forEach(p => { %>
+                <option value="<%= p.id %>"><%= p.nom %></option>
+              <% }) %>
+            </select>
+          </td>
+          <td><input type="number" name="products[0][quantity]" class="form-control" required></td>
+          <td><input type="number" name="products[0][unit_price]" class="form-control" step="0.01" required></td>
+          <td><input type="number" name="products[0][discount]" class="form-control" step="0.01"></td>
+          <td><input type="number" name="products[0][tax]" class="form-control" step="0.01"></td>
+          <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Supprimer</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <button type="button" class="btn btn-secondary mb-3" onclick="addRow()">Ajouter une ligne</button>
+
+    <div class="mb-3">
+      <label for="note" class="form-label">Note (optionnelle)</label>
+      <textarea name="note" id="note" class="form-control" rows="3"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+    <a href="/purchase-orders" class="btn btn-outline-secondary">Annuler</a>
+  </form>
+</div>
+
+<script>
+  let rowCount = 1;
+
+  function addRow() {
+    const table = document.getElementById('productsTable').getElementsByTagName('tbody')[0];
+    const row = table.insertRow();
+
+    row.innerHTML = `
+      <td>
+        <select name="products[${rowCount}][product_id]" class="form-select" required>
+          <% products.forEach(p => { %>
+            <option value="<%= p.id %>"><%= p.nom %></option>
+          <% }) %>
+        </select>
+      </td>
+      <td><input type="number" name="products[${rowCount}][quantity]" class="form-control" required></td>
+      <td><input type="number" name="products[${rowCount}][unit_price]" class="form-control" step="0.01" required></td>
+      <td><input type="number" name="products[${rowCount}][discount]" class="form-control" step="0.01"></td>
+      <td><input type="number" name="products[${rowCount}][tax]" class="form-control" step="0.01"></td>
+      <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Supprimer</button></td>
+    `;
+
+    rowCount++;
+  }
+
+  function removeRow(button) {
+    const row = button.closest('tr');
+    row.remove();
+  }
+</script>
+
+<%- include('../partials/footer') %>

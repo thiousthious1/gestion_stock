@@ -1,0 +1,108 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h2 class="fw-bold text-primary"><i class="bi bi-credit-card-2-front me-2"></i> Modes de Paiement</h2>
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPaymentModeModal">
+    <i class="bi bi-plus-circle me-1"></i> Ajouter un mode
+  </button>
+</div>
+
+<% if (successMessage) { %>
+  <div class="alert alert-success"><%= successMessage %></div>
+<% } %>
+
+<div class="table-responsive">
+  <table class="table table-bordered align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>#</th>
+        <th>Nom</th>
+        <th>Type</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% paymentModes.forEach((mode, i) => { %>
+        <tr>
+          <td><%= i + 1 %></td>
+          <td><%= mode.name %></td>
+          <td><%= mode.type %></td>
+          <td>
+            <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editPaymentModeModal<%= mode.id %>">
+                <i class="bi bi-pencil"></i>
+            </button>
+            <form action="/settings/payment-modes/delete/<%= mode.id %>" method="POST" class="d-inline">
+              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Supprimer ce mode ?')">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal ajout -->
+<div class="modal fade" id="addPaymentModeModal" tabindex="-1" aria-labelledby="addPaymentModeModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form action="/settings/payment-modes/add" method="POST" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addPaymentModeModalLabel">Ajouter un mode de paiement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Nom du mode</label>
+          <input type="text" name="name" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Type</label><br>
+          <div class="btn-group" role="group">
+            <input type="radio" class="btn-check" name="type" id="cash" value="Cash" autocomplete="off" checked>
+            <label class="btn btn-outline-primary" for="cash">Cash</label>
+
+            <input type="radio" class="btn-check" name="type" id="bank" value="Bank" autocomplete="off">
+            <label class="btn btn-outline-primary" for="bank">Bank</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Créer</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<% paymentModes.forEach(mode => { %>
+  <div class="modal fade" id="editPaymentModeModal<%= mode.id %>" tabindex="-1">
+    <div class="modal-dialog">
+      <form action="/settings/payment-modes/edit/<%= mode.id %>" method="POST" class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Modifier le mode de paiement</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nom du mode</label>
+            <input type="text" name="name" value="<%= mode.name %>" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Type</label><br>
+            <div class="btn-group" role="group">
+              <input type="radio" class="btn-check" name="type" id="edit-cash-<%= mode.id %>" value="Cash" <%= mode.type === 'Cash' ? 'checked' : '' %>>
+              <label class="btn btn-outline-primary" for="edit-cash-<%= mode.id %>">Cash</label>
+
+              <input type="radio" class="btn-check" name="type" id="edit-bank-<%= mode.id %>" value="Bank" <%= mode.type === 'Bank' ? 'checked' : '' %>>
+              <label class="btn btn-outline-primary" for="edit-bank-<%= mode.id %>">Bank</label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Modifier</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+<% }) %>
+

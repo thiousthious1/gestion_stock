@@ -1,0 +1,89 @@
+<%- include('../partials/header', { page: 'inventories', pageGroup: 'inventories' }) %>
+
+<%- include('../partials/breadcrumb', { parent: 'Inventaires', current: 'Liste des inventaires' }) %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+        <i class="bi bi-clipboard-data"></i> Liste des inventaires
+    </h1>
+    <% if (hasRight('add_stock_adjustments', 'add')) { %>
+        <a href="/inventories/add" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nouvel inventaire
+        </a>
+    <% } %>
+
+</div>
+<div class="mb-3">
+    <a href="/inventories" class="btn <%= !filter ? 'btn-primary' : 'btn-outline-primary' %> me-2">
+        <i class="bi bi-list"></i> Tous les inventaires
+    </a>
+    <a href="/inventories?filter=adjusted" class="btn <%= filter === 'adjusted' ? 'btn-primary' : 'btn-outline-primary' %>">
+        <i class="bi bi-exclamation-triangle"></i> Avec ajustements
+    </a>
+    <% if (hasRight('view_stock_adjustments', 'view')) { %>
+        <a href="/inventories/report/pdf" class="btn btn-outline-primary">
+            <i class="bi bi-file-earmark-pdf"></i> Export PDF consolidé
+        </a>
+    <% } %>
+
+    
+</div>
+
+<table id="inventoryTable" class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Référence</th>
+            <th>Note</th>
+            <th>Utilisateur</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (inventories.length > 0) { %>
+            <% inventories.forEach(function(inventory) { %>
+                <tr>
+                    <td><%= new Date(inventory.inventory_date).toLocaleDateString('fr-FR') %></td>
+                    <td>
+                        <%= inventory.reference %>
+                        <% if (inventory.has_adjustment) { %>
+                            <span class="badge bg-danger ms-2">Ajustement</span>
+                        <% } %>
+                    </td>                    
+                    <td><%= inventory.note %></td>
+                    <td><%= inventory.user_name || 'Inconnu' %></td>
+                    <td>
+                        <!-- On prévoit futur : voir détails / supprimer -->
+                        <% if (hasRight('view_stock_adjustments', 'view')) { %>
+                            <a href="/inventories/view/<%= inventory.id %>" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        <% } %>
+                       
+                    </td>
+                </tr>
+            <% }); %>
+        <% } else { %>
+            <tr>
+                <td colspan="5">Aucun inventaire enregistré.</td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+
+<%- include('../partials/footer') %>
+
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#inventoryTable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json'
+            }
+        });
+    });
+</script>

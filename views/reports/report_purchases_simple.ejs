@@ -1,0 +1,40 @@
+<%- include('../partials/header', { page: 'report-purchases', pageGroup: 'reports' }) %>
+
+<div class="container mt-5 fade-in">
+
+    <h1 class="fw-bold text-primary mb-4">
+        <i class="bi bi-clipboard-data"></i> Rapport des achats
+    </h1>
+
+    <a href="/reports/purchases/print" class="btn btn-secondary mb-3">
+        <i class="bi bi-printer"></i> Imprimer
+    </a>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Date</th>
+                <th>Fournisseur</th>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Prix unitaire</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% achats.forEach(a => { %>
+                <tr>
+                    <td><%= a.purchase_date.toISOString().split('T')[0] %></td>
+                    <td><%= a.fournisseur || 'Non spécifié' %></td>
+                    <td><%= a.produit || 'Non spécifié' %></td>
+                    <td><%= a.quantity %></td>
+                    <td><%= (a.purchase_price || 0).toLocaleString('fr-FR', {minimumFractionDigits: 2}) %> FCFA</td>
+                    <td><%= (a.total || 0).toLocaleString('fr-FR', {minimumFractionDigits: 2}) %> FCFA</td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+</div>
+
+<%- include('../partials/footer') %>

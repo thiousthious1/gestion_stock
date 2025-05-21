@@ -1,0 +1,67 @@
+<%- include('../partials/header', { pageGroup: 'inventories', page: 'inventories-edit' }) %>
+
+<div class="container mt-5 fade-in">
+
+    <%- include('../partials/breadcrumb', { parent: 'Inventaires', current: 'Modifier inventaire' }) %>
+
+    <h1 class="fw-bold text-primary">
+        <i class="bi bi-pencil-square"></i> Modifier l'inventaire <%= inventory.reference %>
+    </h1>
+
+    <form action="/inventories/edit/<%= inventory.id %>" method="POST" class="mt-4">
+
+        <div class="mb-3">
+            <label class="form-label">Date de l'inventaire</label>
+            <input type="date" name="inventory_date" class="form-control" value="<%= inventory.inventory_date.toISOString().split('T')[0] %>" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Note</label>
+            <textarea name="note" class="form-control" rows="3"><%= inventory.note %></textarea>
+        </div>
+
+        <h4 class="fw-bold mt-4 mb-3 text-primary">Produits</h4>
+
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Produit</th>
+                    <th>Quantité système</th>
+                    <th>Quantité constatée</th>
+                    <th>Écart</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% items.forEach(function(item) { %>
+                    <tr>
+                        <td>
+                            <%= item.product_name %>
+                            <input type="hidden" name="item_id[]" value="<%= item.id %>">
+                        </td>
+                        <td>
+                            <%= item.system_quantity %>
+                            <input type="hidden" name="system_quantity[]" value="<%= item.system_quantity %>">
+                        </td>
+                        <td>
+                            <input type="number" name="counted_quantity[]" value="<%= item.counted_quantity %>" class="form-control" required>
+                        </td>
+                        <td>
+                            <%= item.adjustment %>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+
+        <div class="d-flex justify-content-end">
+            <a href="/inventories" class="btn btn-secondary me-2">
+                <i class="bi bi-arrow-left-circle"></i> Annuler
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Enregistrer les modifications
+            </button>
+        </div>
+    </form>
+</div>
+
+<%- include('../partials/footer') %>

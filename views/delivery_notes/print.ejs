@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Bon de livraison</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; font-size: 12px; margin: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .logo { max-height: 60px; }
+    .company-info { text-align: right; font-size: 11px; }
+    .title { text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #007bff; }
+    .table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .table th, .table td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    .table th { background-color: #f0f0f0; }
+    .footer { margin-top: 40px; font-size: 10px; text-align: center; color: #666; }
+    .signature-block { margin-top: 50px; }
+    .signature-box { border: 1px dashed #999; height: 60px; width: 300px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <% if (logoBase64) { %>
+      <img src="<%= logoBase64 %>" class="logo" alt="Logo">
+    <% } %>
+    <div class="company-info">
+      <strong><%= settings.company_name %></strong><br>
+      RCCM : <%= settings.company_rccm %><br>
+      IFU : <%= settings.company_ifu %><br>
+      ☎ <%= settings.company_phone %><br>
+      ✉ <%= settings.company_email %><br>
+      <%= settings.company_address %>
+    </div>
+  </div>
+
+  <div class="title">Bon de Livraison N° <%= note.id %></div>
+
+  <p><strong>Client :</strong> <%= note.customer_name || 'Client inconnu' %></p>
+  <p><strong>Date :</strong> <%= new Date(note.delivery_date).toLocaleDateString('fr-FR') %></p>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Produit</th>
+        <th>Quantité</th>
+        <th>Prix unitaire</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% let total = 0; %>
+      <% details.forEach(item => {
+        const lineTotal = item.quantity * item.unit_price;
+        total += lineTotal;
+      %>
+        <tr>
+          <td><%= item.product_name %></td>
+          <td><%= item.quantity %></td>
+          <td><%= parseFloat(item.unit_price).toLocaleString('fr-FR') %> FCFA</td>
+          <td><%= lineTotal.toLocaleString('fr-FR') %> FCFA</td>
+        </tr>
+      <% }) %>
+      <tr class="fw-bold">
+        <td colspan="3" style="text-align: right;">Total TTC</td>
+        <td><%= total.toLocaleString('fr-FR') %> FCFA</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <% if (note.note) { %>
+    <p><strong>Note :</strong> <%= note.note %></p>
+  <% } %>
+
+  <div class="signature-block">
+    <p><strong>Signature du client :</strong></p>
+    <div class="signature-box"></div>
+  </div>
+
+  <div class="footer">
+    <hr>
+    <p>Ce document est généré automatiquement et est valable sans signature manuscrite.</p>
+  </div>
+
+  <script>
+    window.onload = () => window.print();
+  </script>
+</body>
+</html>

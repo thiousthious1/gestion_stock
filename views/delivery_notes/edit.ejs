@@ -1,0 +1,31 @@
+<%- include('../partials/header', { page: 'delivery-notes', pageGroup: 'sales' }) %>
+
+<div class="container mt-4">
+  <h1 class="fw-bold text-primary mb-4">Modifier Bon de Livraison N° <%= note.id %></h1>
+
+  <form action="/delivery-notes/<%= note.id %>/update" method="POST" class="p-4 bg-light rounded shadow-sm">
+    <div class="mb-3">
+      <label>Date de livraison</label>
+      <input type="date" name="delivery_date" class="form-control" value="<%= note.delivery_date.toISOString().split('T')[0] %>">
+    </div>
+
+    <div class="mb-3">
+      <label>Statut</label>
+      <select name="status" class="form-select">
+        <option value="en attente" <%= note.status === 'en attente' ? 'selected' : '' %>>En attente</option>
+        <option value="partiellement livré" <%= note.status === 'partiellement livré' ? 'selected' : '' %>>Partiellement livré</option>
+        <option value="livré" <%= note.status === 'livré' ? 'selected' : '' %>>Livré</option>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label>Note</label>
+      <textarea name="note" class="form-control"><%= note.note %></textarea>
+    </div>
+
+    <button class="btn btn-primary">Mettre à jour</button>
+    <a href="/delivery-notes" class="btn btn-secondary">Annuler</a>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>

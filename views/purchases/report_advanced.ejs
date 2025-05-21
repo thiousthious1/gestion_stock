@@ -1,0 +1,153 @@
+<%- include('../partials/header', { page: page, pageGroup: pageGroup }) %>
+
+
+<h1 class="mb-4">📦 Rapport avancé des achats</h1>
+<div class="d-flex justify-content-end mb-3 gap-2">
+
+    <% if (startDate && endDate) { %>
+        <a href="/purchases/report/advanced/print?startDate=<%= startDate %>&endDate=<%= endDate %>" class="btn btn-secondary btn-sm">
+            <i class="bi bi-printer"></i> Version imprimable
+        </a>
+    
+        <a href="/purchases/report/advanced/excel?startDate=<%= startDate %>&endDate=<%= endDate %>" 
+            class="btn btn-success btn-sm">
+            <i class="bi bi-file-earmark-excel"></i> Exporter Excel
+        </a>
+        
+        <a href="/purchases/report/advanced/pdf?startDate=<%= startDate %>&endDate=<%= endDate %>" class="btn btn-danger btn-sm">
+            <i class="bi bi-file-earmark-pdf"></i> Exporter PDF
+        </a>
+    <% } %>
+     
+
+</div>
+
+
+<form action="/purchases/report/advanced/result" method="POST">
+
+    <div class="container mb-4">
+
+        <!-- Filtres rapides -->
+        <!-- Filtres rapides -->
+        <div class="p-3 border rounded bg-light mb-3" style="max-width: 600px; margin: auto;">
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <a href="/purchases/report/advanced/quick?period=today" class="btn btn-outline-primary btn-sm">Aujourd'hui</a>
+                <a href="/purchases/report/advanced/quick?period=yesterday" class="btn btn-outline-primary btn-sm">Hier</a>
+                <a href="/purchases/report/advanced/quick?period=last7days" class="btn btn-outline-primary btn-sm">7 derniers jours</a>
+                <a href="/purchases/report/advanced/quick?period=thismonth" class="btn btn-outline-primary btn-sm">Ce mois-ci</a>
+                <a href="/purchases/report/advanced/quick?period=thisyear" class="btn btn-outline-primary btn-sm">Cette année</a>
+            </div>
+        </div>
+
+
+        <!-- Sélection de période -->
+        <div class="p-3 border rounded bg-light mb-3" style="max-width: 600px; margin: auto;">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Date début</label>
+                    <input type="date" name="startDate" class="form-control" value="<%= startDate || '' %>" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Date fin</label>
+                    <input type="date" name="endDate" class="form-control" value="<%= endDate || '' %>" required>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bouton rechercher -->
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-search"></i> Rechercher
+            </button>
+        </div>
+
+    </div>
+</form>
+
+<% if (results) { %>
+    <h3>Résultats</h3>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th># Achat</th>
+                    <th>Date</th>
+                    <th>Fournisseur</th>
+                    <th>Produit</th>
+                    <th>Quantité</th>
+                    <th>Prix unitaire</th>
+                    <th>Montant total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% let total = 0; %>
+                <% if (results.length > 0) { %>
+                    <% results.forEach(function(row) { %>
+                        <tr>
+                            <td><%= row.purchase_id %></td>
+                            <td><%= row.purchase_date ? row.purchase_date.toISOString().split('T')[0] : '' %></td>
+                            <td><%= row.supplier_name || 'Non spécifié' %></td>
+                            <td><%= row.product_name || 'Non spécifié' %></td>
+                            <td><%= row.quantity %></td>
+                            <td><%= row.purchase_price ? parseFloat(row.purchase_price).toFixed(2) : '0.00' %> FCFA</td>
+                            <td><%= row.total_amount ? parseFloat(row.total_amount).toFixed(2) : '0.00' %> FCFA</td>
+                        </tr>
+                        <% total += parseFloat(row.total_amount || 0); %>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="7" class="text-center">Aucun achat trouvé pour la période sélectionnée.</td>
+                    </tr>
+                <% } %>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="6" class="text-end">Montant total TTC :</th>
+                    <th><%= total.toFixed(2) %> FCFA</th>
+                </tr>
+            </tfoot>
+            
+        </table>
+
+        <hr>
+
+        <h3>Totaux par fournisseur</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Fournisseur</th>
+                    <th>Total achats</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% totauxParFournisseur.forEach(function(row) { %>
+                    <tr>
+                        <td><%= row.supplier_name || 'Non spécifié' %></td>
+                        <td><%= row.total_achats ? parseFloat(row.total_achats).toFixed(2) : '0.00' %> FCFA</td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+
+        <h3>Totaux par catégorie</h3>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Catégorie</th>
+                    <th>Total achats</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% totauxParCategorie.forEach(function(row) { %>
+                    <tr>
+                        <td><%= row.category_name || 'Non spécifiée' %></td>
+                        <td><%= row.total_achats ? parseFloat(row.total_achats).toFixed(2) : '0.00' %> FCFA</td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+
+    </div>
+<% } %>
+
+<%- include('../partials/footer') %>

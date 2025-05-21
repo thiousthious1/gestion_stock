@@ -1,0 +1,38 @@
+<%- include('../partials/header', { page: 'report-stock', pageGroup: 'reports' }) %>
+
+<div class="container mt-5 fade-in">
+
+    <h1 class="fw-bold text-primary mb-4">
+        <i class="bi bi-boxes"></i> Rapport de stock
+    </h1>
+
+    <a href="/reports/stock/print" class="btn btn-secondary mb-3">
+        <i class="bi bi-printer"></i> Imprimer
+    </a>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Quantité</th>
+                <th>Prix unitaire</th>
+                <th>Valeur stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% produits.forEach(p => { %>
+                <tr>
+                    <td><%= p.id %></td>
+                    <td><%= p.nom %></td>
+                    <td><%= p.quantite %></td>
+                    <td><%= (p.prix_vente || 0).toLocaleString('fr-FR', {minimumFractionDigits: 2}) %> FCFA</td>
+                    <td><%= (p.valeur_stock || 0).toLocaleString('fr-FR', {minimumFractionDigits: 2}) %> FCFA</td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+</div>
+
+<%- include('../partials/footer') %>

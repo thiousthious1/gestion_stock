@@ -1,0 +1,91 @@
+<%- include('../partials/header', { page: 'purchase_orders', pageGroup: 'purchases' }) %>
+
+<div class="container mt-4">
+  <h1 class="fw-bold text-primary mb-4"><i class="bi bi-card-list"></i> Bons de Commande</h1>
+
+  <div class="mb-3 text-end">
+    <% if (hasRight('add_purchase_orders', 'add')) { %>
+      <a href="/purchase-orders/add" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Nouveau Bon de Commande
+      </a>
+    <% } %>
+
+  </div>
+
+  <form method="GET" class="mb-3 d-flex align-items-center gap-2">
+    <label for="status" class="form-label mb-0">Filtrer par statut :</label>
+    <select name="status" id="status" class="form-select w-auto">
+      <option value="">-- Tous --</option>
+      <option value="en attente" <%= selectedStatus === 'en attente' ? 'selected' : '' %>>En attente</option>
+      <option value="envoyé" <%= selectedStatus === 'envoyé' ? 'selected' : '' %>>Envoyé</option>
+      <option value="reçu partiellement" <%= selectedStatus === 'reçu partiellement' ? 'selected' : '' %>>Partiellement reçu</option>
+      <option value="reçu complètement" <%= selectedStatus === 'reçu complètement' ? 'selected' : '' %>>Reçu</option>
+      <option value="annulé" <%= selectedStatus === 'annulé' ? 'selected' : '' %>>Annulé</option>
+    </select>
+    <button type="submit" class="btn btn-sm btn-primary">Filtrer</button>
+  </form>
+
+  <div class="table-responsive shadow-sm">
+    <table class="table table-bordered" id="purchaseOrdersTable">
+      <thead class="table-light">
+        <tr>
+          <th>ID</th>
+          <th>Fournisseur</th>
+          <th>Date</th>
+          <th>Montant total</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% orders.forEach(order => { %>
+          <tr>
+            <td><%= order.id %></td>
+            <td><%= order.supplier_name %></td>
+            <td><%= new Date(order.order_date).toLocaleDateString('fr-FR') %></td>
+            <td><%= parseFloat(order.total_amount).toLocaleString('fr-FR') %> FCFA</td>
+            <td>
+              <% if (order.status === 'en attente') { %>
+                <span class="badge bg-secondary">En attente</span>
+              <% } else if (order.status === 'envoyé') { %>
+                <span class="badge bg-primary">Envoyé</span>
+              <% } else if (order.status === 'reçu partiellement') { %>
+                <span class="badge bg-warning text-dark">Partiellement reçu</span>
+              <% } else if (order.status === 'reçu complètement') { %>
+                <span class="badge bg-success">Reçu</span>
+              <% } else if (order.status === 'annulé') { %>
+                <span class="badge bg-danger">Annulé</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (hasRight('view_purchase_orders', 'view')) { %>
+                <a href="/purchase-orders/<%= order.id %>" class="btn btn-sm btn-outline-info">Voir</a>
+                <a href="/purchase-orders/<%= order.id %>/print" target="_blank" class="btn btn-sm btn-outline-secondary">Imprimer</a>
+              <% } %>
+
+              <% if (hasRight('delete_purchase_orders', 'delete')) { %>
+                <form action="/purchase-orders/<%= order.id %>/delete" method="POST" onsubmit="return confirm('Confirmer la suppression ?')" style="display: inline;">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                </form>
+              <% } %>
+
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    $('#purchaseOrdersTable').DataTable({
+      language: {
+        url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/fr-FR.json'
+      },
+      order: [[0, 'desc']]
+    });
+  });
+</script>
+
+<%- include('../partials/footer') %>

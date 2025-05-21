@@ -1,0 +1,67 @@
+<%- include('../partials/header', { page: 'suppliers-edit', pageGroup: 'suppliers' }) %>
+
+
+<div class="container mt-5 fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+      <i class="bi bi-truck"></i> Modifier Fournisseur
+    </h1>
+    <a href="/suppliers" class="btn btn-primary custom-retour">
+      <i class="bi bi-arrow-left-circle"></i> Retour à la liste
+    </a>
+  </div>
+  <%- include('../partials/breadcrumb', { parent: 'Fournisseurs', current: 'Modifier Fournisseur' }) %>
+
+  <form action="/suppliers/edit/<%= supplier.id %>" method="POST" class="shadow p-4 rounded bg-light">
+    <div class="mb-3">
+      <label class="form-label fw-bold">Nom *</label>
+      <input type="text" name="name" class="form-control" value="<%= supplier.name %>" required>
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-bold">Contact</label>
+      <input type="text" name="contact" class="form-control" value="<%= supplier.contact %>">
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-bold">Téléphone</label>
+      <input type="text" name="phone" class="form-control" value="<%= supplier.phone %>">
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-bold">Email</label>
+      <input type="email" name="email" class="form-control" value="<%= supplier.email %>">
+    </div>
+    <button type="submit" class="btn btn-warning btn-lg custom-button">
+      <i class="bi bi-save-fill"></i> Mettre à jour
+    </button>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>
+
+<style>
+  .fade-in {
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .custom-retour {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .custom-retour:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0.5rem 1rem rgba(0, 123, 255, 0.5); /* Bleu vif */
+  }
+
+  .custom-button {
+    transition: all 0.3s ease-in-out;
+  }
+
+  .custom-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0.5rem 1rem rgba(255, 193, 7, 0.5); /* Jaune vif */
+  }
+</style>

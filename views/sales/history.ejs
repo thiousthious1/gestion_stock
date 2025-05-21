@@ -1,0 +1,477 @@
+
+<%- include('../partials/header', { page: 'sales', pageGroup: 'sales' }) %>
+
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<% if (typeof successMessage !== 'undefined') { %>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: '<%= successMessage %>',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  });
+</script>
+<% } %>
+
+<div class="container mt-5 fade-in">
+  <ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+      <a class="nav-link <%= (filter === 'all') ? 'active' : '' %>" href="/sales/history">Toutes</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= (filter === 'unpaid') ? 'active' : '' %>" href="/sales/history?filter=unpaid">Impayées</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= (filter === 'partial') ? 'active' : '' %>" href="/sales/history?filter=partial">Partiellement payées</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link <%= (filter === 'paid') ? 'active' : '' %>" href="/sales/history?filter=paid">Payées</a>
+    </li>
+  </ul>
+  
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary"><i class="bi bi-card-list"></i> Liste des Ventes</h1>
+    <% if (permissions['add_sales'] && permissions['add_sales'].add) { %>
+      <a href="/sales/add" class="btn btn-primary">
+        <i class="bi bi-cart-plus-fill"></i> Nouvelle Vente
+      </a>
+    <% } %>
+
+  </div>
+  <%- include('../partials/breadcrumb', { parent: 'Transactions', current: 'Ventes' }) %>
+
+  <div class="table-responsive shadow-sm">
+    <table id="salesTable" class="table table-bordered align-middle">
+      <thead class="table-light">
+        <tr class="text-center">
+          <th></th>
+          <th>Numéro Facture</th>
+          <th>Date</th>
+          <th>Client</th>
+          <th>Statut Vente</th>
+          <th>Montant Total</th>
+          <th>Montant Payé</th>
+          <th>Montant Dû</th>
+          <th>Statut Paiement</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% sales.forEach((sale) => { %>
+          <tr data-sale-id="<%= sale.id %>">
+            <td class="details-control text-center" style="cursor: pointer;">➕</td>
+            <td>SALE-<%= sale.id %></td>
+            <td><%= new Date(sale.created_at).toLocaleDateString() %></td>
+            <td><%= sale.customer_name || 'Client Passager' %></td>
+            <td><span class="badge bg-success"><%= sale.status %></span></td>
+            <td><%= Number(sale.total_amount).toLocaleString() %> CFA</td>
+            <td><%= Number(sale.paid_amount).toLocaleString() %> CFA</td>
+            <td><%= Number(sale.due_amount).toLocaleString() %> CFA</td>
+            <td>
+              <% if (sale.payment_status === 'Paid') { %>
+                <span class="badge bg-success">Payée</span>
+              <% } else if (sale.payment_status === 'Unpaid') { %>
+                <span class="badge bg-danger">Impayée</span>
+              <% } else { %>
+                <span class="badge bg-warning text-dark">Partiellement payée</span>
+              <% } %>
+            </td>
+            <td>
+              <div class="dropdown-hover">
+                <i class="bi bi-three-dots-vertical" style="cursor: pointer;"></i>
+                <ul class="dropdown-menu show-on-hover">
+
+                  <% if (hasRight('view_sales', 'view')) { %>
+                    <li><a class="dropdown-item" href="/sales/<%= sale.id %>/details">👁️ Voir</a></li>
+                  <% } %>
+
+                  <% if (!sale.has_return && hasRight('edit_sales', 'edit')) { %>
+                    <li><a class="dropdown-item" href="/sales/<%= sale.id %>/edit">✏️ Modifier</a></li>
+                  <% } %>
+
+                  <% if (hasRight('view_sales', 'view')) { %>
+                    <li><a class="dropdown-item" href="/sales/<%= sale.id %>/invoice" target="_blank">⬇️ Télécharger Facture</a></li>
+                    <li><a class="dropdown-item" href="/sales/invoices/print/<%= sale.id %>" target="_blank">🖨️ Imprimer Facture</a></li>
+                    <li><a href="/sales/invoices/ticket/<%= sale.id %>" target="_blank" class="dropdown-item">🧾 Ticket de caisse </a></li>
+                    <li><a href="/sales/invoices/ticket/pdf/<%= sale.id %>" class="dropdown-item">📄 Télécharger Ticket PDF</a></li>
+                  <% } %>
+
+                  <% if (hasRight('add_sales_payments', 'add')) { %>
+                    <li><a class="dropdown-item" href="/payments/sales/<%= sale.id %>/add">💰 Ajouter Paiement</a></li>
+                  <% } %>
+
+                  <% if (hasRight('view_sales', 'view')) { %>
+                    <li><a class="dropdown-item" href="/payments/sale/<%= sale.id %>">👁️ Liste Paiements</a></li>
+                  <% } %>
+
+                  <% if (!sale.delivery_note_id && hasRight('add_delivery_notes', 'add')) { %>
+                    <li>
+                      <a href="/delivery-notes/add/<%= sale.id %>" class="dropdown-item">
+                        <i class="bi bi-truck"></i> Créer bon de livraison
+                      </a>
+                    </li>
+                  <% } else if (sale.delivery_note_id && hasRight('view_delivery_notes', 'view')) { %>
+                    <li>
+                      <a href="/delivery-notes/<%= sale.delivery_note_id %>" class="dropdown-item">
+                        👁️ Voir bon de livraison
+                      </a>
+                    </li>
+                  <% } %>
+
+                  <% if (!sale.has_return && hasRight('add_sales_returns', 'add')) { %>
+                    <li>
+                      <a href="/returns/add?saleId=<%= sale.id %>" class="dropdown-item">
+                        ↩️ Retour produit
+                      </a>
+                    </li>
+                  <% } %>
+
+                  <% if (hasRight('view_sales', 'view')) { %>
+                    <li><a class="dropdown-item" href="/payments/sale/<%= sale.id %>">💳 Remboursement</a></li>
+                  <% } %>
+
+                  <% if (sale.payment_status !== 'Paid' && hasRight('edit_sales', 'edit')) { %>
+                    <li>
+                      <form method="POST" action="/sales/<%= sale.id %>/mark-paid" onsubmit="return confirmMarkPaid(event)">
+                        <button type="submit" class="dropdown-item text-success">✅ Marquer comme payée</button>
+                      </form>
+                    </li>
+                  <% } %>
+
+                </ul>
+              </div>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SweetAlert2 pour confirmation paiement -->
+<script>
+  function confirmMarkPaid(event) {
+    event.preventDefault();
+    Swal.fire({
+      title: 'Confirmer le paiement complet ?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Oui, marquer comme payée',
+      cancelButtonText: 'Annuler',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        event.target.submit();
+      }
+    });
+    return false;
+  }
+</script>
+
+<!-- Les détails pour chaque vente -->
+<script>
+  const detailsData = {
+    <% sales.forEach((sale) => { %>
+      "<%= sale.id %>": `
+
+        <h5><i class="bi bi-box-seam"></i> Détails Produits :</h5>
+        <table class='table table-sm'>
+          <thead>
+            <tr>
+              <th>Produit</th><th>Quantité</th><th>Prix Unitaire</th><th>Remise (%)</th><th>Taxe (%)</th><th>Sous-total</th>
+            </tr>
+          </thead>
+          <tbody>
+          <% sale.details.forEach(product => { 
+              let lineTotal = parseFloat(product.unit_price || 0) * parseFloat(product.quantity || 0);
+              lineTotal -= lineTotal * (parseFloat(product.discount || 0) / 100);
+              lineTotal += lineTotal * (parseFloat(product.tax || 0) / 100);
+          %>
+            <tr>
+              <td><%= product.product_name %></td>
+              <td><%= product.quantity %></td>
+              <td><%= Number(product.unit_price).toLocaleString() %> CFA</td>
+              <td><%= Number(product.discount).toLocaleString() %> %</td>
+              <td><%= Number(product.tax).toLocaleString() %> %</td>
+              <td><%= lineTotal.toLocaleString() %> CFA</td>
+            </tr>
+          <% }); %>
+          </tbody>
+        </table>
+
+        <% if (sale.global_discount > 0) { %>
+          <p><span class="badge bg-warning text-dark">Remise Globale :</span> <%= Number(sale.global_discount).toLocaleString() %> %</p>
+        <% } %>
+        <% if (sale.global_tax > 0) { %>
+          <p><span class="badge bg-info text-dark">Taxe Globale :</span> <%= Number(sale.global_tax).toLocaleString() %> %</p>
+        <% } %>
+
+        <% if (sale.total_returned && sale.total_returned > 0) { 
+            const totalInitial = Number(sale.total_amount) + Number(sale.total_returned || 0);
+        %>
+          <h5>
+            <span class="text-muted">Total initial :</span>
+            <span class="text-decoration-line-through text-muted"><%= totalInitial.toLocaleString() %> FCFA</span>
+          </h5>
+          <p><span class="badge bg-danger">🛒 Retour client : -<%= Number(sale.total_returned).toLocaleString() %> FCFA</span></p>
+          <h5><span class="fw-bold text-success">Total après retour :</span> <%= Number(sale.total_amount).toLocaleString() %> FCFA</h5>
+
+          <% let totalRetour = 0; %>
+          <% if (sale.returns && sale.returns.length > 0) { %>
+            <div class="mt-3">
+              <h6 class="text-danger fw-bold">Produits retournés :</h6>
+              <table class="table table-bordered table-sm">
+                <thead>
+                  <tr>
+                    <th>Produit</th><th>Quantité</th><th>Prix Unitaire</th><th>Valeur</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% sale.returns.forEach(ret => {
+                    const prix = parseFloat(ret.unit_price || 0);
+                    const qte = parseFloat(ret.quantity || 0);
+                    const remise = parseFloat(ret.discount || 0);
+                    const taxe = parseFloat(ret.tax || 0);
+
+                    let montantHT = prix * qte;
+                    montantHT -= montantHT * (remise / 100);
+                    const montantTVA = montantHT * (taxe / 100);
+                    const montantTotal = montantHT + montantTVA;
+
+                    totalRetour += montantTotal;
+                  %>
+                    <tr>
+                      <td><%= ret.product_name %></td>
+                      <td><%= qte %></td>
+                      <td><%= prix.toLocaleString() %> CFA</td>
+                      <td><%= montantTotal.toLocaleString() %> CFA</td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+                <tfoot>
+                  <tr class="fw-bold">
+                    <td colspan="3" class="text-end">Total retour :</td>
+                    <td><%= totalRetour.toLocaleString() %> CFA</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          <% } %>
+
+        <% } else { %>
+          <h5>Total : <%= Number(sale.total_amount).toLocaleString() %> FCFA</h5>
+        <% } %>
+
+      `,
+    <% }); %>
+  };
+</script>
+
+
+
+<!-- DataTables CSS et JS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    const table = $('#salesTable').DataTable({
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json' },
+        responsive: true,
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'copy',
+                text: '<i class="bi bi-clipboard"></i> Copier',
+                className: 'btn btn-secondary',
+                exportOptions: {
+                  columns: ':not(:first-child):not(:last-child)' // On exclut le "+" et la colonne Action
+              }
+            },
+            {
+                extend: 'excel',
+                text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+                className: 'btn btn-success',
+                exportOptions: {
+                  columns: ':not(:first-child):not(:last-child)' // On exclut le "+" et la colonne Action
+              }
+            },
+            {
+                extend: 'csv',
+                text: '<i class="bi bi-filetype-csv"></i> CSV',
+                className: 'btn btn-info',
+                exportOptions: {
+                  columns: ':not(:first-child):not(:last-child)' // On exclut le "+" et la colonne Action
+              }
+            },
+            {
+              extend: 'pdf',
+              text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
+              className: 'btn btn-danger',
+              exportOptions: {
+                  columns: ':not(:first-child):not(:last-child)' // On exclut le "+" et la colonne Action
+              }
+            }
+            ,
+            {
+                extend: 'print',
+                text: '<i class="bi bi-printer"></i> Imprimer',
+                className: 'btn btn-primary',
+                exportOptions: {
+                  columns: ':not(:first-child):not(:last-child)' // On exclut le "+" et la colonne Action
+              }
+            }
+        ]
+    });
+
+    $('#salesTable tbody').on('click', 'td.details-control', function () {
+        const tr = $(this).closest('tr');
+        const row = table.row(tr);
+        const saleId = tr.data('sale-id');
+
+        if (row.child.isShown()) {
+            row.child.hide();
+            $(this).text('➕');
+        } else {
+            row.child(detailsData[saleId]).show();
+            $(this).text('➖');
+        }
+    });
+});
+
+
+</script>
+
+<%- include('../partials/footer') %>
+
+<!-- DataTables Buttons extension -->
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.flash.min.js"></script>
+
+<!-- JSZip et pdfmake pour Excel et PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+
+
+
+<style>
+  body {
+    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+}
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* MENU HOVER STYLE TYPE STOCKIFLY */
+.dropdown-hover {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-hover .dropdown-menu {
+    display: block;
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+    top: 100%;
+    right: -100%;   /* ALIGNEMENT GAUCHE comme Stockifly */
+    min-width: 220px;
+    z-index: 1000;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    background-color: #fff;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+    padding: 0;
+    transform: translateX(-110px); /* petit décalage vers la gauche au départ */
+}
+
+/* Apparition lente quand hover */
+.dropdown-hover:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+}
+
+.dropdown-menu li {
+    list-style: none;
+}
+
+.dropdown-menu .dropdown-item {
+    display: block;
+    padding: 0.5rem 1rem;
+    color: #212529;
+    text-decoration: none;
+}
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+table.dataTable td {
+    white-space: nowrap;
+    overflow: visible;
+}
+
+table.dataTable td.details-control {
+    cursor: pointer;
+}
+
+table.dataTable td:last-child {
+    width: 20px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Empêcher l'affichage des boutons d'export sur PDF/Print */
+@media print {
+    .dt-buttons, 
+    .dt-button, 
+    .buttons-html5, 
+    .buttons-print {
+        display: none !important;
+    }
+}
+
+
+/* Même chose pour l'export PDF */
+button.dt-button, div.dt-buttons {
+    -webkit-print-color-adjust: exact;
+}
+
+
+
+</style>
+
+<% if (errorMessage && errorMessage.length > 0 && errorMessage[0].trim().length > 0) { %>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      Swal.fire({
+        icon: 'error',
+        title: 'Erreur',
+        text: '<%= errorMessage[0] %>',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000
+      });
+    });
+  </script>
+<% } %>
+

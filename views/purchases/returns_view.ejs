@@ -1,0 +1,43 @@
+<%- include('../partials/header', { page: 'purchase-returns', pageGroup: 'purchases' }) %>
+
+<div class="container mt-5 fade-in">
+    <h1 class="mb-4"><i class="bi bi-eye"></i> Détail du retour fournisseur</h1>
+
+    <div class="mb-3">
+        <strong>Date du retour :</strong> <%= returnInfo.return_date.toISOString().split('T')[0] %>
+    </div>
+    <div class="mb-3">
+        <strong>Achat associé :</strong> Achat n°<%= returnInfo.purchase_id %> (du <%= returnInfo.purchase_date.toISOString().split('T')[0] %>)
+    </div>
+    <div class="mb-3">
+        <strong>Motif général :</strong> <%= returnInfo.general_reason ? returnInfo.general_reason : '—' %>
+    </div>
+
+    <h4 class="mt-4">Produits retournés</h4>
+    <div class="table-responsive shadow-sm">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-primary">
+                <tr>
+                    <th>Produit</th>
+                    <th>Quantité retournée</th>
+                    <th>Motif spécifique</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% productRows.forEach(item => { %>
+                    <tr>
+                        <td><%= item.product_name %></td>
+                        <td><%= item.quantity %></td>
+                        <td><%= item.reason ? item.reason : '—' %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+
+    <a href="/purchase-returns" class="btn btn-secondary mt-3">
+        <i class="bi bi-arrow-left-circle"></i> Retour à la liste
+    </a>
+</div>
+
+<%- include('../partials/footer') %>

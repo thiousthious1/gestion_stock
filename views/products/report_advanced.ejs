@@ -1,0 +1,83 @@
+<%- include('../partials/header', { page: page, pageGroup: pageGroup }) %>
+
+
+<div class="container mt-5 fade-in">
+
+    <h1 class="fw-bold text-primary mb-4">
+        <i class="bi bi-boxes"></i> Rapport avancé du stock
+    </h1>
+
+    <!-- Valeur totale du stock -->
+    <div class="mb-4 shadow-sm p-3 rounded bg-light">
+        <h4>Valeur totale du stock :</h4>
+        <p><strong>Valeur d’achat :</strong> <%= (parseFloat(valeurStock.valeur_stock_achat) || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2 }) %> FCFA</p>
+        <p><strong>Valeur de vente :</strong> <%= (parseFloat(valeurStock.valeur_stock_vente) || 0).toLocaleString('fr-FR', { minimumFractionDigits: 2 }) %> FCFA</p>
+    </div>
+
+    <!-- Produits faibles en stock -->
+    <div class="mb-5 shadow-sm p-3 rounded bg-light">
+        <h4>Produits faibles en stock</h4>
+        <% if (produitsFaibles.length > 0) { %>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Quantité</th>
+                        <th>Seuil d’alerte</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% produitsFaibles.forEach(prod => { %>
+                        <tr>
+                            <td><%= prod.nom %></td>
+                            <td><%= prod.quantite %></td>
+                            <td><%= prod.stock_alert_level %></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p class="text-success">Aucun produit faible en stock.</p>
+        <% } %>
+    </div>
+
+    <!-- Produits sans mouvement -->
+    <div class="shadow-sm p-3 rounded bg-light">
+        <h4>Produits sans mouvement depuis <%= days %> jours</h4>
+        <form method="get" action="/products/report/advanced" class="mb-3">
+            <div class="input-group" style="max-width: 300px;">
+                <input type="number" name="days_without_movement" value="<%= days %>" class="form-control" min="1">
+                <button type="submit" class="btn btn-primary">Appliquer</button>
+                <a href="/products/report/advanced/print?days_without_movement=<%= days %>" class="btn btn-secondary no-print">
+                    <i class="bi bi-printer"></i> Imprimer
+                </a>
+                
+            </div>
+        </form>
+        <% if (produitsSansMouvement.length > 0) { %>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Quantité</th>
+                        <th>Dernier mouvement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% produitsSansMouvement.forEach(prod => { %>
+                        <tr>
+                            <td><%= prod.nom %></td>
+                            <td><%= prod.quantite %></td>
+                            <td><%= new Date(prod.derniere_mouvement).toISOString().split('T')[0] %></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p class="text-success">Aucun produit sans mouvement sur la période choisie.</p>
+        <% } %>
+    </div>
+
+</div>
+
+<%- include('../partials/footer') %>

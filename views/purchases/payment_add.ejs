@@ -1,0 +1,61 @@
+<%- include('../partials/header', { page: 'purchase-payments', pageGroup: 'purchases' }) %>
+
+<div class="container mt-5 fade-in">
+    <h1><i class="bi bi-plus-circle"></i> Enregistrer un paiement fournisseur</h1>
+
+    <% if (successMessage && successMessage.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= successMessage[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+
+    <form action="/purchase-payments/add" method="POST">
+        <div class="mb-3">
+            <label class="form-label">Achat</label>
+            <select name="purchase_id" class="form-select" required>
+                <option value="">-- Sélectionner --</option>
+                <% purchases.forEach(p => { %>
+                    <option value="<%= p.id %>" <%= (p.id == selectedPurchaseId) ? 'selected' : '' %>>
+                        Achat #<%= p.id %> - <%= p.supplier_name %>
+                    </option>
+                <% }) %>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Date paiement</label>
+            <input type="date" name="payment_date" class="form-control" required value="<%= new Date().toISOString().split('T')[0] %>">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Montant</label>
+            <input type="number" step="0.01" name="amount" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Méthode de paiement</label>
+            <select name="payment_method" class="form-select">
+                <option value="">-- Sélectionner --</option>
+                <option value="Espèces">Espèces</option>
+                <option value="Chèque">Chèque</option>
+                <option value="Virement bancaire">Virement bancaire</option>
+                <option value="Mobile Money">Mobile Money</option>
+                <option value="Autre">Autre</option>
+            </select>
+        </div>
+        
+
+        <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea name="notes" class="form-control"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-save-fill"></i> Enregistrer
+        </button>
+        <a href="/purchase-payments" class="btn btn-secondary">Retour</a>
+    </form>
+</div>
+
+<%- include('../partials/footer') %>

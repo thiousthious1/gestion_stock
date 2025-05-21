@@ -1,0 +1,46 @@
+
+/* Le dropdown est caché par défaut */
+.dropdown-hover .dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: -100px; /* Ajuste ici si besoin pour l'alignement */
+  min-width: 180px;
+  z-index: 1000;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+}
+
+/* Quand on survole le parent, on affiche le menu */
+.dropdown-hover:hover .dropdown-menu {
+  display: block;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Petite animation d'apparition */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Ajoute aussi un peu d'ombre pour un effet plus joli */
+.dropdown-menu {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.col {
+  height: 100vh;
+  overflow-y: auto;
+}
+
+main {
+  padding: 1rem;
+}
+
+
+

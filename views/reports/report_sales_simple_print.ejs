@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport des ventes - Impression</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @media print { .no-print { display: none !important; } }
+        .logo { max-height: 80px; }
+    </style>
+</head>
+<body class="p-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <img src="/images/logo_happy.jpg" alt="Logo" class="logo">
+        <h2 class="fw-bold text-primary">Rapport des ventes</h2>
+    </div>
+
+    <div class="mb-4 no-print">
+        <a href="/reports/sales" class="btn btn-secondary me-2">Retour</a>
+        <button class="btn btn-success" onclick="window.print()">Imprimer</button>
+    </div>
+
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Client</th>
+                <th>Montant</th>
+                <th>Statut paiement</th>
+                <th>Vendeur</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% ventes.forEach(v => { %>
+                <tr>
+                    <td><%= v.id %></td>
+                    <td><%= v.created_at.toISOString().split('T')[0] %></td>
+                    <td><%= v.client_name || 'Non spécifié' %></td>
+                    <td><%= (v.total_amount || 0).toLocaleString('fr-FR', {minimumFractionDigits: 2}) %> FCFA</td>
+                    <td><%= v.payment_status %></td>
+                    <td><%= v.vendeur || 'Non attribué' %></td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+</body>
+</html>

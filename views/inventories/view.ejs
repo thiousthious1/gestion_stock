@@ -1,0 +1,124 @@
+<%- include('../partials/header', { page: 'inventories', pageGroup: 'inventories' }) %>
+
+<%- include('../partials/breadcrumb', { parent: 'Inventaires', current: 'Détail de l\'inventaire' }) %>
+
+
+
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+      <i class="bi bi-clipboard-data"></i> Détail de l'inventaire
+    </h1>
+  
+    <div class="d-flex flex-wrap justify-content-end align-items-center gap-2 no-print">
+        <a href="/inventories" class="btn btn-secondary">
+            <i class="bi bi-arrow-left-circle"></i> Retour à la liste
+        </a>
+
+        <% if (hasRight('view_stock_adjustments', 'view')) { %>
+            <a href="/inventories/export/<%= inventory.id %>" class="btn btn-outline-danger">
+                <i class="bi bi-file-earmark-pdf"></i> Exporter en PDF
+            </a>
+            <a href="/inventories/print/<%= inventory.id %>" target="_blank" class="btn btn-secondary">
+                <i class="bi bi-printer"></i> Imprimer
+            </a>
+        <% } %>
+
+        <% if (hasRight('edit_stock_adjustments', 'edit')) { %>
+            <a href="/inventories/edit/<%= inventory.id %>" class="btn btn-warning">
+                <i class="bi bi-pencil-square"></i> Modifier
+            </a>
+        <% } %>
+
+        <% if (hasRight('delete_stock_adjustments', 'delete')) { %>
+            <button type="button" class="btn btn-danger" id="btnDelete">
+                <i class="bi bi-trash"></i> Supprimer
+            </button>
+        <% } %>
+
+    </div>
+  </div>
+  
+
+<!-- Informations générales -->
+<div class="mb-4">
+    <h5 class="fw-bold">Informations générales</h5>
+    <ul class="list-group">
+        <li class="list-group-item"><strong>Date :</strong> <%= new Date(inventory.inventory_date).toLocaleDateString('fr-FR') %></li>
+        <li class="list-group-item"><strong>Référence :</strong> <%= inventory.reference %></li>
+        <li class="list-group-item"><strong>Utilisateur :</strong> <%= inventory.user_name || 'Inconnu' %></li>
+        <li class="list-group-item"><strong>Note :</strong> <%= inventory.note || '-' %></li>
+    </ul>
+</div>
+
+<!-- Produits contrôlés -->
+<h5 class="fw-bold">Produits contrôlés</h5>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Produit</th>
+            <th>Quantité système</th>
+            <th>Quantité constatée</th>
+            <th>Écart</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (items.length > 0) { %>
+            <% items.forEach(function(item) { %>
+                <tr class="<%= parseFloat(item.adjustment) !== 0 ? 'table-warning' : '' %>">
+                    <td>
+                        <%= item.product_name %>
+                        <% if (parseFloat(item.adjustment) !== 0) { %>
+                            <span class="badge bg-warning text-dark ms-2">Ajustement</span>
+                        <% } %>
+                    </td>
+                    <td><%= item.system_quantity %></td>
+                    <td><%= item.counted_quantity %></td>
+                    <td style="color: <%= item.adjustment < 0 ? 'red' : (item.adjustment > 0 ? 'green' : 'black') %>;">
+                        <%= item.adjustment %>
+                    </td>
+                </tr>
+                               
+            <% }); %>
+        <% } else { %>
+            <tr>
+                <td colspan="4">Aucun produit contrôlé pour cet inventaire.</td>
+            </tr>
+        <% } %>
+    </tbody>
+</table>
+    <!-- Zone de signature -->
+<hr>
+<div class="row mt-4">
+    <div class="col-6 text-start">
+        <p><strong>Préparé par :</strong></p>
+        <div style="border-bottom: 1px solid #000; width: 80%; height: 40px;"></div>
+    </div>
+    <div class="col-6 text-end">
+        <p><strong>Approuvé par :</strong></p>
+        <div style="border-bottom: 1px solid #000; width: 80%; height: 40px; float: right;"></div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.getElementById('btnDelete').addEventListener('click', function () {
+        Swal.fire({
+            title: 'Supprimer cet inventaire ?',
+            text: "Cette action est irréversible.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Oui, supprimer',
+            cancelButtonText: 'Annuler'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "/inventories/delete/<%= inventory.id %>";
+            }
+        });
+    });
+</script>
+
+<%- include('../partials/footer') %>
+
+

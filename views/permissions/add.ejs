@@ -1,0 +1,90 @@
+<%- include('../partials/header', { page: 'permissions', pageGroup: 'settings' }) %>
+
+<!-- Toast pour feedback utilisateur -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+  <% if (Array.isArray(successMessage) && successMessage.length > 0) { %>
+    <div class="toast align-items-center text-white bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          <%= successMessage[0] %>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  <% } %>
+
+  <% if (Array.isArray(errorMessage) && errorMessage.length > 0) { %>
+    <div class="toast align-items-center text-white bg-danger border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          <%= errorMessage[0] %>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  <% } %>
+</div>
+
+
+
+<div class="container mt-5">
+  <h2 class="fw-bold text-primary mb-4">Ajouter une nouvelle permission</h2>
+
+  <form action="/permissions/add" method="POST">
+    <div class="mb-3">
+      <label for="name" class="form-label">Nom technique (ex: view_orders)</label>
+      <input type="text" class="form-control" id="name" name="name" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="display_name" class="form-label">Nom affiché</label>
+      <input type="text" class="form-control" id="display_name" name="display_name" required>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Associer à un rôle :</label>
+      <select class="form-select" name="role_id" required>
+        <% roles.forEach(role => { %>
+          <option value="<%= role.id %>"><%= role.display_name %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Droits :</label>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="can_view" id="can_view" value="1">
+        <label class="form-check-label" for="can_view">View</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="can_add" id="can_add" value="1">
+        <label class="form-check-label" for="can_add">Add</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="can_edit" id="can_edit" value="1">
+        <label class="form-check-label" for="can_edit">Edit</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="can_delete" id="can_delete" value="1">
+        <label class="form-check-label" for="can_delete">Delete</label>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-success">Ajouter la permission</button>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const toastElList = [].slice.call(document.querySelectorAll('.toast'))
+    toastElList.forEach(function (toastEl) {
+      const toast = new bootstrap.Toast(toastEl, {
+        delay: 3000, // disparaît après 3 secondes
+        autohide: true
+      });
+      toast.show();
+    });
+  });
+</script>
+

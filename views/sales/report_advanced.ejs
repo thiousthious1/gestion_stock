@@ -1,0 +1,197 @@
+<%- include('../partials/header', { page: page, pageGroup: pageGroup }) %>
+
+
+<%- include('../partials/breadcrumb', { parent: 'Rapports', current: 'Rapport de ventes avancé' }) %>
+
+<h1 class="fw-bold text-primary mb-4">
+    <i class="bi bi-graph-up"></i> Rapport de ventes avancé
+</h1>
+
+<form action="/sales/report/advanced" method="POST" class="row g-3 mb-4">
+    <div class="container mb-4">
+
+        <!-- BLOC 1 : Boutons de filtre rapide -->
+        <div class="p-3 border rounded bg-light shadow-sm mb-3" style="max-width: 600px; margin: auto;">
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <a href="/sales/report/advanced/quick?period=today" class="btn btn-outline-primary btn-sm px-3">Aujourd'hui</a>
+                <a href="/sales/report/advanced/quick?period=yesterday" class="btn btn-outline-primary btn-sm px-3">Hier</a>
+                <a href="/sales/report/advanced/quick?period=last7days" class="btn btn-outline-primary btn-sm px-3">7 derniers jours</a>
+                <a href="/sales/report/advanced/quick?period=thismonth" class="btn btn-outline-primary btn-sm px-3">Ce mois-ci</a>
+                <a href="/sales/report/advanced/quick?period=thisyear" class="btn btn-outline-primary btn-sm px-3">Cette année</a>
+            </div>
+        </div>
+    
+        <!-- BLOC 2 : Sélection des dates -->
+        <div class="p-3 border rounded bg-light shadow-sm mb-3" style="max-width: 600px; margin: auto;">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="startDate" class="form-label fw-bold">Date début</label>
+                    <input type="date" id="startDate" name="startDate" class="form-control" value="<%= startDate || '' %>" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="endDate" class="form-label fw-bold">Date fin</label>
+                    <input type="date" id="endDate" name="endDate" class="form-control" value="<%= endDate || '' %>" required>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Bouton Rechercher centré -->
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary btn-lg px-4">
+                <i class="bi bi-search"></i> Rechercher
+            </button>
+        </div>
+    
+        
+    </div>
+    
+    
+     
+</form>
+
+<% if (results) { %>
+    <div class="table-responsive">
+        <div class="d-flex justify-content-end mb-3">
+            <a href="/sales/report/advanced/print?startDate=<%= startDate %>&endDate=<%= endDate %>" class="btn btn-secondary">
+                <i class="bi bi-printer"></i> Version imprimable
+            </a>
+            
+            
+            <button class="btn btn-success">
+                <a href="/sales/report/advanced/excel?startDate=<%= startDate %>&endDate=<%= endDate %>" class="btn btn-success btn-sm">
+                    <i class="bi bi-file-earmark-excel"></i> Exporter Excel</a>
+            </button>
+            <button class="btn btn-danger">
+                <a href="/sales/report/advanced/pdf?startDate=<%= startDate %>&endDate=<%= endDate %>" class="btn btn-danger btn-sm">
+                    <i class="bi bi-file-earmark-pdf"></i> Exporter PDF</a>
+            </button>
+        </div>
+        
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th># Vente</th>
+                    <th>Date</th>
+                    <th>Client</th>
+                    <th>Montant TTC</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% let total = 0; %>
+                <% results.forEach(function(row) { %>
+                    <tr>
+                        <td>Vente <%= row.id %></td>
+                        <td><%= row.date_vente.toISOString().split('T')[0] %></td>
+                        <td><%= row.client_name || 'Non spécifié' %></td>
+                        <td><%= (parseFloat(row.total_amount) || 0).toFixed(2) %> FCFA</td>
+                    </tr>
+                    <% total += parseFloat(row.total_amount) || 0; %>
+                    
+                <% }) %>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="3" class="text-end">Total général :</th>
+                    <th><%= total.toFixed(2) %> FCFA</th>
+                </tr>
+            </tfoot>
+        </table>
+
+        <h3 class="mt-5">Totaux par client</h3>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th class="text-end">Total des ventes (FCFA)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% totauxParClient.forEach(function(row) { %>
+                    <tr>
+                        <td><%= row.client_name || 'Non spécifié' %></td>
+                        <td class="text-end"><%= row.total_ventes ? parseFloat(row.total_ventes).toFixed(2) : '0.00' %></td>
+
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+
+        <h3 class="mt-5">Totaux par produit</h3>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Produit</th>
+                    <th class="text-end">Quantité vendue</th>
+                    <th class="text-end">Total des ventes (FCFA)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% totauxParProduit.forEach(function(row) { %>
+                    <tr>
+                        <td><%= row.product_name || 'Non spécifié' %></td>
+                        <td class="text-end"><%= row.total_quantite ? parseFloat(row.total_quantite).toFixed(2) : '0.00' %></td>
+                        <td class="text-end"><%= row.total_ventes ? parseFloat(row.total_ventes).toFixed(2) : '0.00' %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+
+        <h3 class="mt-5">Totaux par catégorie de produit</h3>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Catégorie</th>
+                    <th class="text-end">Total des ventes (FCFA)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% totauxParCategorie.forEach(function(row) { %>
+                    <tr>
+                        <td><%= row.categorie_name || 'Non spécifiée' %></td>
+                        <td class="text-end"><%= row.total_ventes ? parseFloat(row.total_ventes).toFixed(2) : '0.00' %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+
+
+        <h3 class="mt-5">Montants globaux</h3>
+
+        <table class="table table-bordered w-50">
+            <tr>
+                <th>Montant HT</th>
+                <td class="text-end"><%= parseFloat(totauxGlobaux.total_ht).toFixed(2) %> FCFA</td>
+            </tr>
+            <tr>
+                <th>TVA</th>
+                <td class="text-end"><%= parseFloat(totauxGlobaux.total_tva).toFixed(2) %> FCFA</td>
+            </tr>
+            <tr>
+                <th>Montant TTC</th>
+                <td class="text-end"><%= parseFloat(totauxGlobaux.total_ttc).toFixed(2) %> FCFA</td>
+            </tr>
+        </table>
+
+
+
+    </div>
+<% } %>
+<style>
+    @media print {
+        .btn, .d-flex, nav, .breadcrumb, .form-control, .form-label {
+            display: none !important;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+    }
+</style>
+    
+<%- include('../partials/footer') %>

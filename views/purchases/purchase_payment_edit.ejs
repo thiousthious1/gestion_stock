@@ -1,0 +1,44 @@
+<%- include('../partials/header', { page: 'purchase-payments', pageGroup: 'purchases' }) %>
+
+<div class="container mt-5 fade-in">
+    <h1 class="mb-4">Modifier le paiement n° <%= payment.id %></h1>
+
+    <% if (successMessage && successMessage.length > 0) { %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= successMessage[0] %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <% } %>
+
+    <form action="/purchase-payments/update/<%= payment.id %>" method="POST">
+        <div class="mb-3">
+            <label>Fournisseur</label>
+            <input type="text" class="form-control" value="<%= payment.supplier_name || '—' %>" disabled>
+        </div>
+
+        <div class="mb-3">
+            <label>Date de paiement</label>
+            <input type="date" name="payment_date" class="form-control" value="<%= payment.payment_date.toISOString().split('T')[0] %>" required>
+        </div>
+
+        <div class="mb-3">
+            <label>Montant (FCFA)</label>
+            <input type="number" name="amount" class="form-control" step="0.01" value="<%= payment.amount %>" required>
+        </div>
+
+        <div class="mb-3">
+            <label>Méthode</label>
+            <input type="text" name="payment_method" class="form-control" value="<%= payment.payment_method %>">
+        </div>
+
+        <div class="mb-3">
+            <label>Notes</label>
+            <textarea name="notes" class="form-control"><%= payment.note %></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success">Mettre à jour le paiement</button>
+        <a href="/purchase-payments" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+
+<%- include('../partials/footer') %>

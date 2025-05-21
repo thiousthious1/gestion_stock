@@ -1,0 +1,155 @@
+<!-- ✅ FICHIER : views/settings/email.ejs -->
+<h2 class="fw-bold mb-4 text-primary">
+  <i class="bi bi-envelope-at me-2"></i> Paramètres Email
+</h2>
+
+<% if (successMessage) { %>
+  <div class="alert alert-success"><%= successMessage %></div>
+<% } %>
+
+<form action="/settings/email" method="POST">
+  <div class="row">
+    <!-- 📧 Colonne gauche : Configuration SMTP -->
+    <div class="col-md-8">
+      <div class="mb-3">
+        <label class="form-label">Mail Driver</label>
+        <select name="mail_driver" class="form-select">
+          <option value="None" <%= email.mail_driver === 'None' ? 'selected' : '' %>>None</option>
+          <option value="SMTP" <%= email.mail_driver === 'SMTP' ? 'selected' : '' %>>SMTP</option>
+        </select>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Mail From Name</label>
+          <input type="text" name="mail_from_name" class="form-control" value="<%= email.mail_from_name || '' %>">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Mail From Email</label>
+          <input type="email" name="mail_from_email" class="form-control" value="<%= email.mail_from_email || '' %>">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Enable Mail Queue</label>
+          <select name="enable_queue" class="form-select">
+            <option value="on" <%= email.enable_queue ? 'selected' : '' %>>Yes</option>
+            <option value="off" <%= !email.enable_queue ? 'selected' : '' %>>No</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Host</label>
+          <input type="text" name="host" class="form-control" value="<%= email.host || '' %>">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Port</label>
+          <input type="text" name="port" class="form-control" value="<%= email.port || '' %>">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Encryption</label>
+          <select name="encryption" class="form-select">
+            <option value="">None</option>
+            <option value="ssl" <%= email.encryption === 'ssl' ? 'selected' : '' %>>SSL</option>
+            <option value="tls" <%= email.encryption === 'tls' ? 'selected' : '' %>>TLS</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-control" value="<%= email.username || '' %>">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" value="<%= email.password || '' %>">
+        </div>
+      </div>
+    </div>
+
+    <!-- 📩 Colonne droite : Send Mail For -->
+    <div class="col-md-4">
+      <div class="fw-bold mb-2">Send Mail For</div>
+      <% const modules = [
+        { key: 'stock_adjustment', label: 'Stock Adjustment' },
+        { key: 'purchase_return', label: 'Purchase Return / Dr. Note' },
+        { key: 'purchase', label: 'Purchases' },
+        { key: 'sale', label: 'Sales' },
+        { key: 'sale_return', label: 'Sales Return / Cr. Note' },
+        { key: 'expense', label: 'Expenses' },
+        { key: 'staff', label: 'Staff Members' }
+      ]; %>
+
+      <% modules.forEach(m => { %>
+        <div class="mb-3">
+          <label class="form-label fw-semibold"><%= m.label %></label>
+          <div class="form-check">
+            <input type="checkbox" name="send_on_create_<%= m.key %>" class="form-check-input" <%= email['send_on_create_' + m.key] ? 'checked' : '' %>>
+            <label class="form-check-label">On Create</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" name="send_on_update_<%= m.key %>" class="form-check-input" <%= email['send_on_update_' + m.key] ? 'checked' : '' %>>
+            <label class="form-check-label">On Update</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" name="send_on_delete_<%= m.key %>" class="form-check-input" <%= email['send_on_delete_' + m.key] ? 'checked' : '' %>>
+            <label class="form-check-label">On Delete</label>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <div class="col-12 mt-4">
+      <button type="submit" class="btn btn-primary">
+        <i class="bi bi-save me-1"></i> Update
+      </button>
+      <button type="button" class="btn btn-outline-primary" onclick="sendTestEmail()">
+        <i class="bi bi-envelope-check"></i> Envoyer un mail test
+      </button>
+
+
+    </div>
+  </div>
+</form>
+
+<!-- Toast de succès/erreur -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+  <div id="toastMailTest" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body" id="toastMailMessage">
+        Message
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fermer"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function sendTestEmail() {
+    fetch('/settings/email/test', { method: 'POST' })
+      .then(response => response.json())
+      .then(data => {
+        const toastEl = document.getElementById('toastMailTest');
+        const toastBody = document.getElementById('toastMailMessage');
+        toastBody.textContent = data.message || 'Réponse inconnue';
+        toastEl.classList.remove('bg-success', 'bg-danger');
+        toastEl.classList.add(data.success ? 'bg-success' : 'bg-danger');
+        new bootstrap.Toast(toastEl).show();
+      })
+      .catch(err => {
+        const toastEl = document.getElementById('toastMailTest');
+        const toastBody = document.getElementById('toastMailMessage');
+        toastBody.textContent = "Erreur lors de l'envoi du mail.";
+        toastEl.classList.remove('bg-success');
+        toastEl.classList.add('bg-danger');
+        new bootstrap.Toast(toastEl).show();
+      });
+  }
+</script>
+
+<script>
+  document.getElementById('sendTestMailBtn').addEventListener('click', function () {
+    fetch('/settings/email/test', { method: 'POST' })
+      .then(response => response.json())
+      .then(data => {
+        alert(data.success ? '✅ Mail envoyé avec succès' : '❌ Échec : ' + data.message);
+      })
+      .catch(err => {
+        alert('Erreur réseau : ' + err.message);
+      });
+  });
+</script>

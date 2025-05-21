@@ -1,0 +1,67 @@
+<%- include('../partials/header', { page: 'users', pageGroup: 'settings' }) %>
+
+<div class="container mt-4">
+  <h2 class="fw-bold text-primary mb-4">
+    <i class="bi bi-pencil-square me-2"></i> Modifier le membre du personnel
+  </h2>
+
+  <form action="/users/update/<%= user.id %>" method="POST" enctype="multipart/form-data" class="row g-3">
+    <div class="col-md-4">
+      <label class="form-label">Image de profil</label>
+      <% if (user.avatar) { %>
+        <img src="/uploads/users/<%= user.avatar %>" class="img-thumbnail mb-2" width="100">
+      <% } %>
+      <input type="file" name="avatar" class="form-control">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Entrepôt</label>
+      <select name="warehouse_id" class="form-select">
+        <% warehouses.forEach(w => { %>
+          <option value="<%= w.id %>" <%= w.id === user.warehouse_id ? 'selected' : '' %>><%= w.name %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Rôle</label>
+      <select name="role" class="form-select">
+        <% roles.forEach(r => { %>
+          <option value="<%= r.id %>" <%= r.id === user.role ? 'selected' : '' %>><%= r.display_name %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="col-md-6">
+      <label class="form-label">Nom</label>
+      <input type="text" name="username" value="<%= user.username %>" class="form-control" required>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Téléphone</label>
+      <input type="text" name="phone" value="<%= user.phone %>" class="form-control">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Email</label>
+      <input type="email" name="email" value="<%= user.email %>" class="form-control">
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Statut</label>
+      <select name="status" class="form-select">
+        <option value="enabled" <%= user.status === 'enabled' ? 'selected' : '' %>>Activé</option>
+        <option value="disabled" <%= user.status === 'disabled' ? 'selected' : '' %>>Désactivé</option>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Mot de passe</label>
+      <input type="password" name="password" value="<%= user.password %>" class="form-control" required>
+    </div>
+    <div class="col-12">
+      <label class="form-label">Adresse</label>
+      <textarea name="address" class="form-control" rows="2"><%= user.address %></textarea>
+    </div>
+    <div class="col-12 text-end">
+      <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i> Mettre à jour</button>
+      <a href="/users" class="btn btn-secondary">Annuler</a>
+    </div>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>

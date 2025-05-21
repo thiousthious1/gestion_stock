@@ -1,0 +1,143 @@
+<% if (successMessage && successMessage.length > 0) { %>
+  <div class="alert alert-success shadow-sm"><%= successMessage %></div>
+<% } %>
+
+<form action="/settings/other" method="POST" class="mt-4">
+
+  <!-- 🔹 Définir un seuil minimal de stock pour bloquer la vente -->
+<div class="mb-4">
+  <label class="form-label fw-semibold">Activer un seuil minimal de stock pour bloquer la vente ?</label>
+  <div class="btn-group" role="group">
+    <input type="radio" class="btn-check" name="enable_stock_threshold" id="threshold_yes" value="yes" <%= settings.enable_stock_threshold === 'yes' ? 'checked' : '' %>>
+    <label class="btn btn-outline-primary" for="threshold_yes">Oui</label>
+
+    <input type="radio" class="btn-check" name="enable_stock_threshold" id="threshold_no" value="no" <%= settings.enable_stock_threshold !== 'yes' ? 'checked' : '' %>>
+    <label class="btn btn-outline-primary" for="threshold_no">Non</label>
+  </div>
+</div>
+
+<!-- Champ conditionnel -->
+<div class="mb-3" id="stockThresholdField" style="display: none;">
+  <label class="form-label">Valeur de stock minimal autorisé (ex: 0, 1, 2...)</label>
+  <input type="number" class="form-control" name="stock_threshold_value" min="0" value="<%= settings.stock_threshold_value || 0 %>">
+</div>
+
+
+
+  <!-- 🔹 Limite de caisse -->
+  <div class="mb-4">
+    <label class="form-label fw-semibold">Définir une limite de caisse ?</label>
+    <div class="btn-group" role="group">
+      <input type="radio" class="btn-check" name="enable_cash_limit" id="cash_limit_yes" value="yes" <%= settings.enable_cash_limit === 'yes' ? 'checked' : '' %>>
+      <label class="btn btn-outline-primary" for="cash_limit_yes">Oui</label>
+
+      <input type="radio" class="btn-check" name="enable_cash_limit" id="cash_limit_no" value="no" <%= settings.enable_cash_limit !== 'yes' ? 'checked' : '' %>>
+      <label class="btn btn-outline-primary" for="cash_limit_no">Non</label>
+    </div>
+  </div>
+
+  <div class="mb-3" id="cashLimitField" style="display: none;">
+    <label class="form-label">Montant de la limite (FCFA)</label>
+    <input type="number" class="form-control" name="cash_limit_amount" placeholder="Ex: 100000" value="<%= settings.cash_limit_amount || '' %>">
+  </div>
+
+  <!-- 🔹 Horaires automatiques -->
+  <div class="mb-4">
+    <label class="form-label fw-semibold">Activer l'ouverture/fermeture automatique de journée ?</label>
+    <div class="btn-group" role="group">
+      <input type="radio" class="btn-check" name="enable_day_schedule" id="schedule_yes" value="yes" <%= settings.enable_day_schedule === 'yes' ? 'checked' : '' %>>
+      <label class="btn btn-outline-primary" for="schedule_yes">Oui</label>
+
+      <input type="radio" class="btn-check" name="enable_day_schedule" id="schedule_no" value="no" <%= settings.enable_day_schedule !== 'yes' ? 'checked' : '' %>>
+      <label class="btn btn-outline-primary" for="schedule_no">Non</label>
+    </div>
+  </div>
+
+  <div id="scheduleFields" style="display: none;">
+    <div class="mb-3">
+      <label class="form-label">Heure d'ouverture</label>
+      <input type="time" class="form-control" name="opening_time" value="<%= settings.opening_time || '' %>">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Heure de fermeture</label>
+      <input type="time" class="form-control" name="closing_time" value="<%= settings.closing_time || '' %>">
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label fw-bold">Statut manuel de la journée :</label>
+    <div id="dayStatusLabel" class="mb-2 text-primary fw-bold">Chargement...</div>
+    <button id="toggleDayStatusBtn" class="btn btn-warning">Changer le statut</button>
+  </div>
+
+
+  <button type="submit" class="btn btn-success mt-3"><i class="bi bi-save"></i> Enregistrer</button>
+</form>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const cashLimitYes = document.getElementById('cash_limit_yes');
+    const cashLimitNo = document.getElementById('cash_limit_no');
+    const cashLimitField = document.getElementById('cashLimitField');
+
+    const scheduleYes = document.getElementById('schedule_yes');
+    const scheduleNo = document.getElementById('schedule_no');
+    const scheduleFields = document.getElementById('scheduleFields');
+
+    function toggleCashLimit() {
+      cashLimitField.style.display = cashLimitYes.checked ? 'block' : 'none';
+    }
+
+    function toggleScheduleFields() {
+      scheduleFields.style.display = scheduleYes.checked ? 'block' : 'none';
+    }
+
+    cashLimitYes.addEventListener('change', toggleCashLimit);
+    cashLimitNo.addEventListener('change', toggleCashLimit);
+    scheduleYes.addEventListener('change', toggleScheduleFields);
+    scheduleNo.addEventListener('change', toggleScheduleFields);
+
+    toggleCashLimit();
+    toggleScheduleFields();
+  });
+
+    const thresholdYes = document.getElementById('threshold_yes');
+    const thresholdNo = document.getElementById('threshold_no');
+    const thresholdField = document.getElementById('stockThresholdField');
+
+    function toggleThresholdField() {
+    thresholdField.style.display = thresholdYes.checked ? 'block' : 'none';
+    }
+
+    thresholdYes.addEventListener('change', toggleThresholdField);
+    thresholdNo.addEventListener('change', toggleThresholdField);
+    toggleThresholdField();
+
+</script>
+
+<script>
+  async function chargerStatutJournee() {
+    const res = await fetch('/settings/day-status');
+    const data = await res.json();
+    const label = document.getElementById('dayStatusLabel');
+    label.textContent = data.status === 'open' ? '🟢 Journée OUVERTE' : '🔴 Journée FERMÉE';
+  }
+
+  document.getElementById('toggleDayStatusBtn').addEventListener('click', async () => {
+    const res = await fetch('/settings/toggle-day-status', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      Swal.fire({
+        icon: 'success',
+        title: `✅ Journée maintenant ${data.status === 'open' ? 'OUVERTE' : 'FERMÉE'}`,
+        timer: 2000,
+        showConfirmButton: false
+      });
+      chargerStatutJournee();
+    }
+  });
+
+  // Initialisation au chargement
+  chargerStatutJournee();
+</script>
+

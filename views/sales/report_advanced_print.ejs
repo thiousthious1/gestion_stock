@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport de ventes avancé (Version imprimable)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        header img {
+            max-height: 80px;
+            margin-bottom: 10px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .btn-print, .btn-back {
+            margin: 10px 5px;
+            padding: 10px 15px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            margin-bottom: 30px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+        .text-right {
+            text-align: right;
+        }
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #555;
+        }
+        @media print {
+            .btn-print, .btn-back {
+                display: none;
+            }
+        }
+        
+        h3, table {
+        page-break-inside: avoid;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 🔵 Header avec logo et boutons -->
+    <header>
+        <img src="/images/logo_happy.jpg" alt="Logo entreprise">
+        <h1>Rapport de ventes avancé</h1>
+        <p><strong>Période :</strong>
+            <%= startDate ? startDate : '---' %> au <%= endDate ? endDate : '---' %>
+        </p>
+
+        <button class="btn-print" onclick="window.print()">Imprimer</button>
+        <a href="/sales/report/advanced" class="btn-back">Retour</a>
+    </header>
+
+    <!-- 🔵 Ventes détaillées -->
+    <h3>Ventes détaillées</h3>
+    <table>
+        <thead>
+            <tr>
+                <th># Vente</th>
+                <th>Date</th>
+                <th>Client</th>
+                <th class="text-right">Montant TTC</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% let total = 0; %>
+            <% results.forEach(function(row) { %>
+                <tr>
+                    <td>Vente <%= row.sale_id %></td>
+                    <td>
+                        <%= 
+                            (typeof row.date_vente === 'string' 
+                                ? row.date_vente.split(' ')[0] 
+                                : row.date_vente instanceof Date 
+                                    ? row.date_vente.toISOString().split('T')[0] 
+                                    : '---'
+                            ) 
+                        %>
+                    </td>
+                    <td><%= row.client_name || 'Non spécifié' %></td>
+                    <td class="text-right"><%= row.total_amount ? parseFloat(row.total_amount).toFixed(2) : '0.00' %> FCFA</td>
+                </tr>
+                <% total += parseFloat(row.total_amount) || 0; %>
+            <% }); %>
+        </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="3" class="text-right">Total général TTC :</th>
+                <th class="text-right"><%= total.toFixed(2) %> FCFA</th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- 🟢 Totaux par client -->
+    <h3>Totaux par client</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Client</th>
+                <th class="text-right">Total des ventes (FCFA)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% totauxParClient.forEach(function(row) { %>
+                <tr>
+                    <td><%= row.client_name || 'Non spécifié' %></td>
+                    <td class="text-right"><%= row.total_ventes ? parseFloat(row.total_ventes).toFixed(2) : '0.00' %></td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+    <!-- 🟠 Totaux par produit -->
+    <h3>Totaux par produit</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th class="text-right">Quantité vendue</th>
+                <th class="text-right">Total des ventes (FCFA)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% totauxParProduit.forEach(function(row) { %>
+                <tr>
+                    <td><%= row.product_name || 'Non spécifié' %></td>
+                    <td class="text-right"><%= row.total_quantite ? parseFloat(row.total_quantite).toFixed(2) : '0.00' %></td>
+                    <td class="text-right"><%= row.total_ventes ? parseFloat(row.total_ventes).toFixed(2) : '0.00' %></td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+    <!-- 🟣 Totaux par catégorie -->
+    <h3>Totaux par catégorie de produit</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Catégorie</th>
+                <th class="text-right">Total des ventes (FCFA)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% totauxParCategorie.forEach(function(row) { %>
+                <tr>
+                    <td><%= row.categorie_name || 'Non spécifiée' %></td>
+                    <td class="text-right"><%= row.total_ventes ? parseFloat(row.total_ventes).toFixed(2) : '0.00' %></td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+    <!-- 🟤 Totaux globaux -->
+    <h3>Montants globaux</h3>
+    <table style="width:50%;">
+        <tr>
+            <th>Montant HT</th>
+            <td class="text-right"><%= parseFloat(totauxGlobaux.total_ht).toFixed(2) %> FCFA</td>
+        </tr>
+        <tr>
+            <th>TVA</th>
+            <td class="text-right"><%= parseFloat(totauxGlobaux.total_tva).toFixed(2) %> FCFA</td>
+        </tr>
+        <tr>
+            <th>Montant TTC</th>
+            <td class="text-right"><%= parseFloat(totauxGlobaux.total_ttc).toFixed(2) %> FCFA</td>
+        </tr>
+    </table>
+
+    <!-- Footer -->
+    <footer>
+        © <%= new Date().getFullYear() %> Votre entreprise — Tous droits réservés.
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Ticket de caisse</title>
+  <style>
+    body { font-family: 'Courier New', monospace; font-size: 11px; width: 250px; margin: 0 auto; color: #000; }
+    .header, .footer { text-align: center; }
+    .header h2 { margin: 5px 0; font-size: 14px; }
+    .info { margin-bottom: 10px; }
+    .info p { margin: 2px 0; }
+    .line { border-top: 1px dashed #000; margin: 5px 0; }
+    .product-line { display: flex; justify-content: space-between; margin: 2px 0; }
+    .total-line { font-weight: bold; }
+    .footer p { margin: 2px 0; font-size: 10px; }
+    .logo-container { text-align: left; margin-bottom: 5px; }
+    .logo-container img { max-height: 40px; }
+    .company-info-right { text-align: right; font-size: 10px; margin-bottom: 5px; }
+    .qr-code { text-align: right; margin-top: 10px; }
+    .qr-code img { height: 60px; }
+    @media print {
+      button { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="logo-container">
+    <% if (settings.logo && logoBase64) { %>
+      <img src="<%= logoBase64 %>" alt="Logo">
+    <% } %>
+  </div>
+
+  <div class="company-info-right">
+    <strong><%= settings.company_name %></strong><br>
+    IFU: <%= settings.company_ifu %><br>
+    Tél: <%= settings.company_phone %>
+  </div>
+
+  <div class="line"></div>
+
+  <div class="info">
+    <p>Date: <%= saleDate %></p>
+    <p>Facture N°: <%= sale.id %></p>
+    <p>Client: <%= sale.customer_name || 'Client Inconnu' %></p>
+    <% if (sale.seller_name) { %><p>Vendeur: <%= sale.seller_name %></p><% } %>
+  </div>
+
+  <div class="line"></div>
+  <% details.forEach(item => {
+    const total = (+item.unit_price * +item.quantity) * (1 - (+item.discount / 100)) * (1 + (+item.tax / 100));
+  %>
+    <div class="product-line">
+      <span><%= item.product_name %> x <%= item.quantity %></span>
+      <span><%= total.toFixed(0) %></span>
+    </div>
+  <% }) %>
+  <div class="line"></div>
+
+  <div class="product-line total-line">
+    <span>Total TTC</span>
+    <span><%= parseFloat(totalTTC).toLocaleString('fr-FR') %></span>
+  </div>
+  <div class="product-line">
+    <span>Payé</span>
+    <span><%= parseFloat(sale.paid_amount || 0).toLocaleString('fr-FR') %></span>
+  </div>
+  <div class="product-line">
+    <span>Reste</span>
+    <span><%= parseFloat(sale.due_amount || 0).toLocaleString('fr-FR') %></span>
+  </div>
+    <% if (qrUrl) { %>
+    <div class="qr-code" style="text-align:right; margin-top:10px;">
+        <img src="<%= qrUrl %>" alt="QR Code">
+    </div>
+    <% } %>
+
+  <div class="footer">
+    <div class="line"></div>
+    <p>Merci pour votre achat !</p>
+    <p><%= settings.company_address %></p>
+  </div>
+
+  <script>
+    window.onload = () => window.print();
+  </script>
+</body>
+</html>

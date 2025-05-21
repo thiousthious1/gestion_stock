@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport des achats - Impression</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        @media print { .no-print { display: none !important; } }
+        .logo { max-height: 80px; }
+    </style>
+</head>
+<body class="p-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <img src="/images/logo_happy.jpg" alt="Logo" class="logo">
+        <h2 class="fw-bold text-primary">Rapport des achats</h2>
+    </div>
+
+    <div class="mb-4 no-print">
+        <a href="/reports/purchases" class="btn btn-secondary me-2">Retour</a>
+        <button class="btn btn-success" onclick="window.print()">Imprimer</button>
+    </div>
+
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Fournisseur</th>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Prix unitaire</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% achats.forEach(a => { %>
+                <tr>
+                    <td><%= a.purchase_date.toISOString().split('T')[0] %></td>
+                    <td><%= a.fournisseur || 'Non spécifié' %></td>
+                    <td><%= a.produit || 'Non spécifié' %></td>
+                    <td><%= a.quantity %></td>
+                    <td><%= (a.purchase_price || 0).toLocaleString('fr-FR', {minimumFractionDigits: 2}) %> FCFA</td>
+                    <td><%= (a.total || 0).toLocaleString('fr-FR', {minimumFractionDigits: 2}) %> FCFA</td>
+                </tr>
+            <% }) %>
+        </tbody>
+    </table>
+
+</body>
+</html>

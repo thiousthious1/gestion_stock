@@ -1,0 +1,35 @@
+<%- include('../partials/header') %>
+
+<div class="container mt-5 fade-in">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold text-primary">
+      <i class="bi bi-person"></i> Modifier le client
+    </h1>
+    <a href="/customers" class="btn btn-secondary">
+      <i class="bi bi-arrow-left"></i> Retour à la liste
+    </a>
+  </div>
+
+  <form action="/customers/edit/<%= client.id %>" method="POST" class="shadow-sm p-4 rounded bg-white">
+    <div class="mb-3">
+      <label for="name" class="form-label">Nom</label>
+      <input type="text" class="form-control" id="name" name="name" value="<%= client.name %>" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="email" class="form-label">Email</label>
+      <input type="email" class="form-control" id="email" name="email" value="<%= client.email %>">
+    </div>
+
+    <div class="mb-3">
+      <label for="phone" class="form-label">Téléphone</label>
+      <input type="text" class="form-control" id="phone" name="phone" value="<%= client.phone %>">
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+      <i class="bi bi-check-circle-fill"></i> Enregistrer
+    </button>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>
